@@ -14,6 +14,7 @@ Every scope or architecture change should be added here.
 | 2026-06-19 | Launch first 5 SEO pages. | These pages match clear search intent and can reuse the core scanner logic. | Initial hub includes `/`, `/spf-checker`, `/dmarc-checker`, `/mx-record-checker`, `/spf-lookup-counter`. | Accepted |
 | 2026-06-19 | Use CTA for assisted setup. | Setup requests are the first likely commercial signal. | Adds lightweight monetization without building SaaS. | Accepted |
 | 2026-06-19 | Do not implement login, dashboard or Stripe in MVP. | These features create SaaS complexity before validation. | Protects scope and keeps launch small. | Accepted |
+| 2026-06-20 | Keep MVP executable code at repository root for now. | The current codebase is still small, and a monorepo `apps/` split would add structure before it reduces complexity. | Frontend lives in root `app/`; backend skeleton lives in root `api/` until growth justifies a move. | Accepted |
 
 ## Pending decisions
 

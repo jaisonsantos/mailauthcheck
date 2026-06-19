@@ -140,36 +140,31 @@ Avoid logging:
 
 This is a reference only. Do not create executable files until there is an explicit implementation task.
 
+## Current implementation note
+
+The MVP implementation currently keeps executable code at the repository root to avoid premature monorepo structure complexity.
+
+- Frontend currently lives in the root `app/` directory.
+- Backend skeleton is expected to live in the root `api/` directory.
+- A move to `apps/web` and `apps/api` can be reconsidered later if the codebase becomes large enough to justify it.
+
 ~~~text
 mailauthcheck/
-  apps/
-    web/
-      app/
-        page.tsx
-        spf-checker/page.tsx
-        dmarc-checker/page.tsx
-        mx-record-checker/page.tsx
-        spf-lookup-counter/page.tsx
-      components/
-      lib/
-    api/
-      app/
-        main.py
-        routers/
-          check_domain.py
-          spf.py
-          dmarc.py
-          mx.py
-        services/
-          dns_resolver.py
-          spf_parser.py
-          dmarc_parser.py
-          score.py
-          readiness.py
-        models/
-          result.py
-        utils/
-          validation.py
+  app/
+    page.tsx
+    spf-checker/page.tsx
+    dmarc-checker/page.tsx
+    mx-record-checker/page.tsx
+    spf-lookup-counter/page.tsx
+  api/
+    main.py
+    routers/
+      check_domain.py
+      checks.py
+    services/
+      placeholder_results.py
+    models.py
+    validation.py
 ~~~
 
 ## Full scan flow
