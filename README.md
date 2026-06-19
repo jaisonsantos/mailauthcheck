@@ -1,1 +1,115 @@
-# mailauthcheck
+# MailAuthCheck
+
+MailAuthCheck is a free, fast, SEO-friendly utility site that checks whether a domain is minimally ready to send email correctly.
+
+The user enters a domain, such as `example.com`, and receives a simple diagnostic report covering SPF, DMARC, MX records, SPF DNS lookup count, and basic Gmail/Yahoo sender-readiness signals.
+
+## Product vision
+
+MailAuthCheck should work like a practical utility site, not like a SaaS product at launch.
+
+The goal is to give users an immediate answer to one question:
+
+> Is my domain ready to send email?
+
+The MVP must be useful without login, dashboard, billing, or complex onboarding.
+
+## MVP strategy
+
+The first version should be:
+
+- free;
+- fast;
+- simple;
+- indexable by Google;
+- clear for non-technical users;
+- useful for developers and agencies;
+- prepared for SEO pages and future lead capture;
+- focused on public DNS checks only.
+
+## What the MVP includes
+
+- Domain input at the top of the page.
+- SPF check.
+- DMARC check.
+- MX check.
+- SPF DNS lookup count.
+- Basic Gmail/Yahoo readiness.
+- Simple score: Ready / Needs attention / Not ready.
+- Plain-English explanation.
+- Optional technical details.
+- Clear next steps.
+- Lightweight lead capture.
+- CTA for assisted setup.
+- Initial SEO pages:
+  - `/`
+  - `/spf-checker`
+  - `/dmarc-checker`
+  - `/mx-record-checker`
+  - `/spf-lookup-counter`
+
+## What the MVP does not include
+
+The MVP must not include:
+
+- login;
+- dashboard;
+- Stripe;
+- billing;
+- paid plans;
+- multi-tenant architecture;
+- complex scan history;
+- recurring monitoring;
+- paid public API;
+- complex PDF reports;
+- agency panel;
+- database;
+- AI in the technical core;
+- blacklist checks;
+- BIMI;
+- MTA-STS;
+- TLS-RPT;
+- email header analyzer.
+
+## Initial positioning
+
+**Name:** MailAuthCheck
+
+**Headline:** Check if your domain is ready to send email
+
+**Subheadline:** Run a quick SPF, DMARC, MX and Gmail/Yahoo readiness check. Get a simple explanation of what is missing and what to fix next.
+
+**Disclaimer:** This check does not guarantee inbox placement. It only verifies public DNS and basic sender-readiness signals.
+
+## Preferred technical direction
+
+The preferred initial stack is:
+
+- Next.js for frontend and SEO pages;
+- FastAPI for DNS/authentication checks;
+- no database in the MVP;
+- simple in-memory TTL cache;
+- basic rate limiting;
+- JSON logs;
+- Google Search Console;
+- Plausible or Google Analytics.
+
+This repository starts with documentation only. No implementation files should be added until a specific implementation task is created.
+
+## Documentation map
+
+- `AGENTS.md` — permanent rules for AI agents and contributors.
+- `docs/00-master-plan-summary.md` — executive summary.
+- `docs/01-product-brief.md` — product brief and positioning.
+- `docs/02-mvp-scope.md` — closed MVP scope.
+- `docs/03-technical-architecture.md` — pragmatic architecture.
+- `docs/04-api-contract.md` — initial API contract.
+- `docs/05-result-schema.md` — standard result model.
+- `docs/06-scoring-model.md` — score model.
+- `docs/07-seo-plan.md` — initial SEO plan.
+- `docs/08-pages-and-content.md` — page map and content plan.
+- `docs/09-validation-plan.md` — 30-day validation plan.
+- `docs/10-monetization.md` — lightweight monetization plan.
+- `docs/11-roadmap.md` — post-MVP roadmap.
+- `docs/12-decision-log.md` — product and architecture decision log.
+- `docs/13-backlog-draft.md` — initial backlog draft.
