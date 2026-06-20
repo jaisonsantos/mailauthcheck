@@ -32,6 +32,7 @@ import { buildDeveloperReport, toneFromStatus } from "@/lib/report";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_MAILAUTHCHECK_API_URL ?? "http://127.0.0.1:8000";
+const SHOW_LOCALE_SELECTOR = false;
 
 type Locale = "en" | "es" | "pt";
 type Theme = "light" | "dark";
@@ -62,9 +63,9 @@ const chromeCopy = {
     notReady: "Not ready",
     resultCards: "Result cards",
     manualChecks: "Manual checks",
-    manualTitle: "These items cannot be verified from DNS",
+    manualTitle: "Manual review required",
     manualIntro:
-      "Review these inside your ESP, message headers or provider dashboards before treating a campaign as ready.",
+      "These items cannot be verified from DNS alone. Review them inside your ESP, message headers or provider dashboards before treating a campaign as ready.",
     bulkChecklist: "Bulk checklist",
     gmailChecklistTitle: "Gmail bulk sender checklist",
     yahooChecklistTitle: "Yahoo bulk sender checklist",
@@ -130,9 +131,9 @@ const chromeCopy = {
     notReady: "No listo",
     resultCards: "Resultados",
     manualChecks: "Checks manuales",
-    manualTitle: "Estos puntos no se pueden verificar solo con DNS",
+    manualTitle: "Revision manual requerida",
     manualIntro:
-      "Revisalos dentro de tu ESP, cabeceras de mensajes o paneles del proveedor antes de tratar una campana como lista.",
+      "Estos puntos no se pueden verificar solo con DNS. Revisalos dentro de tu ESP, cabeceras de mensajes o paneles del proveedor antes de tratar una campana como lista.",
     bulkChecklist: "Checklist bulk",
     gmailChecklistTitle: "Checklist bulk sender de Gmail",
     yahooChecklistTitle: "Checklist bulk sender de Yahoo",
@@ -198,9 +199,9 @@ const chromeCopy = {
     notReady: "Nao pronto",
     resultCards: "Resultados",
     manualChecks: "Checks manuais",
-    manualTitle: "Estes itens nao podem ser verificados apenas por DNS",
+    manualTitle: "Revisao manual obrigatoria",
     manualIntro:
-      "Revise isso no ESP, nos headers da mensagem ou nos paineis do provedor antes de considerar uma campanha pronta.",
+      "Estes itens nao podem ser verificados apenas por DNS. Revise isso no ESP, nos headers da mensagem ou nos paineis do provedor antes de considerar uma campanha pronta.",
     bulkChecklist: "Checklist bulk",
     gmailChecklistTitle: "Checklist bulk sender do Gmail",
     yahooChecklistTitle: "Checklist bulk sender do Yahoo",
@@ -655,16 +656,8 @@ function StatusIcon({ tone }: { tone: "ok" | "warn" | "error" }) {
   return <AlertTriangle aria-hidden="true" />;
 }
 
-function localizedStatusLabel(status: AggregateResult["status"], copy: typeof chromeCopy.en) {
-  if (status === "ready") {
-    return copy.ready;
-  }
-
-  if (status === "not_ready") {
-    return copy.notReady;
-  }
-
-  return copy.needsAttention;
+function contextualStatusLabel(status: AggregateResult["status"], config: CheckerPageConfig) {
+  return config.statusLabels[status];
 }
 
 function ScoreFlags({ result, locale }: { result: AggregateResult; locale: Locale }) {
@@ -937,7 +930,11 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       return;
     }
 
-    const report = buildDeveloperReport(result);
+    const report = buildDeveloperReport(result, {
+      toolName: localizedConfig.reportToolName,
+      scope: localizedConfig.reportScope,
+      statusLabels: localizedConfig.statusLabels,
+    });
 
     try {
       if (!navigator.clipboard?.writeText) {
@@ -1016,19 +1013,21 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                 <span>MailAuthCheck</span>
               </Link>
               <div className="site-controls" aria-label="Site preferences">
-                <div className="segmented" aria-label={copy.language}>
-                  {(Object.keys(localeLabels) as Locale[]).map((item) => (
-                    <button
-                      type="button"
-                      key={item}
-                      className={item === locale ? "active" : undefined}
-                      aria-pressed={item === locale}
-                      onClick={() => setLocale(item)}
-                    >
-                      {localeLabels[item]}
-                    </button>
-                  ))}
-                </div>
+                {SHOW_LOCALE_SELECTOR ? (
+                  <div className="segmented" aria-label={copy.language}>
+                    {(Object.keys(localeLabels) as Locale[]).map((item) => (
+                      <button
+                        type="button"
+                        key={item}
+                        className={item === locale ? "active" : undefined}
+                        aria-pressed={item === locale}
+                        onClick={() => setLocale(item)}
+                      >
+                        {localeLabels[item]}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
                 <button
                   type="button"
                   className="theme-toggle"
@@ -1061,7 +1060,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
 
             <form className="domain-form" aria-label="Domain checker" onSubmit={handleSubmit}>
               <label htmlFor="domain">{copy.domain}</label>
-              <div className="input-row">
+              <div className={`input-row ${localizedConfig.showEspSelector ? "" : "single-input"}`}>
                 <input
                   id="domain"
                   name="domain"
@@ -1069,19 +1068,21 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                   value={domain}
                   onChange={(event) => setDomain(event.target.value)}
                 />
-                <select
-                  id="espProvider"
-                  name="espProvider"
-                  aria-label={copy.esp}
-                  value={espProvider}
-                  onChange={(event) => setEspProvider(event.target.value)}
-                >
-                  {espProviders.map((provider) => (
-                    <option key={provider.id || "unknown"} value={provider.id}>
-                      {provider.name}
-                    </option>
-                  ))}
-                </select>
+                {localizedConfig.showEspSelector ? (
+                  <select
+                    id="espProvider"
+                    name="espProvider"
+                    aria-label={copy.esp}
+                    value={espProvider}
+                    onChange={(event) => setEspProvider(event.target.value)}
+                  >
+                    {espProviders.map((provider) => (
+                      <option key={provider.id || "unknown"} value={provider.id}>
+                        {provider.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : null}
                 <button type="submit" disabled={isLoading}>
                   {isLoading ? <LoaderCircle aria-hidden="true" className="spin" /> : null}
                   <span>{isLoading ? copy.loading : localizedConfig.buttonLabel}</span>
@@ -1097,7 +1098,9 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
           <aside className="score-panel" aria-label="Scan result">
             <div className="score-topline">
               <span>{result ? result.domain : copy.liveChecker}</span>
-              <strong>{result ? localizedStatusLabel(result.status, copy) : copy.runCheck}</strong>
+              <strong>
+                {result ? contextualStatusLabel(result.status, localizedConfig) : copy.runCheck}
+              </strong>
             </div>
             <div
               className="score-ring"
@@ -1142,6 +1145,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                     </div>
                   </div>
                   <p>{check.technicalDetails ?? check.summary}</p>
+                  <span className="raw-record-label">Raw DNS record</span>
                   {check.rawRecords.length > 0 ? (
                     <code>{check.rawRecords.join("\n")}</code>
                   ) : (
