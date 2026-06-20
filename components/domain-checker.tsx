@@ -152,7 +152,9 @@ function BulkChecklistPanel({
 
 export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   const [domain, setDomain] = useState("");
-  const [espProvider, setEspProvider] = useState("");
+  const [espProvider, setEspProvider] = useState(
+    config.pathname === "/guides/mailchimp-gmail-compliance" ? "mailchimp" : "",
+  );
   const [result, setResult] = useState<AggregateResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -356,6 +358,21 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
             <h1>{config.h1}</h1>
             <p className="hero-text">{config.intro}</p>
 
+            <div className="trust-strip" aria-label="Product guardrails">
+              <span>
+                <ShieldCheck aria-hidden="true" />
+                Public DNS checks
+              </span>
+              <span>
+                <CheckCircle2 aria-hidden="true" />
+                No account needed
+              </span>
+              <span>
+                <AlertTriangle aria-hidden="true" />
+                No inbox guarantee
+              </span>
+            </div>
+
             <form className="domain-form" aria-label="Domain checker" onSubmit={handleSubmit}>
               <label htmlFor="domain">Domain</label>
               <div className="input-row">
@@ -503,9 +520,14 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                 Need help fixing this?
               </button>
             )}
-            <button className="secondary" type="button" onClick={handleCopyReport}>
+            <button
+              className="secondary"
+              type="button"
+              onClick={handleCopyReport}
+              disabled={!result}
+            >
               <Copy aria-hidden="true" />
-              {copyLabel}
+              {result ? copyLabel : "Run a scan to copy report"}
             </button>
           </div>
           <p className="cta-note">
@@ -590,7 +612,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
               <span>MailAuthCheck</span>
             </Link>
             <p>
-              A focused utility for SPF, DMARC, MX and sender-readiness basics.
+              A focused utility for SPF, DKIM, DMARC, MX and bulk sender-readiness basics.
             </p>
           </div>
           <nav className="footer-links" aria-label="Footer">
