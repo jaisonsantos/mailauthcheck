@@ -22,6 +22,7 @@ Every scope or architecture change should be added here.
 | 2026-06-20 | Treat DMARC `p=none` as minimum/monitoring mode for bulk sender requirements. | Gmail and Yahoo guidance allow a valid DMARC policy with at least `p=none` for bulk sender minimums, while stronger enforcement remains recommended after review. | Product copy and scoring must not describe `p=none` as absolute non-compliance; it should be a warning/weak enforcement signal. | Accepted |
 | 2026-06-20 | Add lightweight EN/ES/PT UI language controls and light/dark theme controls. | The MVP needs to feel credible and usable for English, Spanish and Portuguese-speaking users without adding heavy i18n routing or SaaS complexity. | Frontend may provide client-side language and theme preferences stored locally. SEO locale routing and backend-translated result text remain out of this decision. | Accepted |
 | 2026-06-20 | Launch first public UI in English only while keeping ES/PT code dormant. | Spanish and Portuguese copy needs native review before public launch, and awkward translation would reduce credibility. | The language selector is hidden for launch; ES/PT client-side copy can be re-enabled after review. | Accepted |
+| 2026-06-20 | Re-enable the EN/ES/PT toggle after a short UX copy review. | The current visible copy is now good enough for users to navigate the product without obvious mixed-language friction. | The language selector is visible again in the UI, while SEO locale routing and deeper content translation remain pending. | Accepted |
 
 ## Pending decisions
 

@@ -102,6 +102,29 @@ class BackendEdgeCaseTests(unittest.TestCase):
             dkim_check.technicalDetails or "",
         )
 
+    def test_spf_redirect_with_clear_all_is_not_marked_weak(self) -> None:
+        def fake_resolve_txt(host: str) -> DNSQueryResult:
+            if host == "gmail.com":
+                return DNSQueryResult(status="ok", values=["v=spf1 redirect=_spf.google.com"])
+            return DNSQueryResult(
+                status="ok",
+                values=["v=spf1 include:_netblocks.google.com ~all"],
+            )
+
+        with patch.object(checks, "resolve_txt", side_effect=fake_resolve_txt):
+            spf_check, spf_records = checks.build_spf_check("gmail.com")
+
+        self.assertEqual(spf_check.status, "ok")
+        self.assertEqual(spf_records, ["v=spf1 redirect=_spf.google.com"])
+        self.assertIn("SPF uses redirect to _spf.google.com.", spf_check.technicalDetails or "")
+        self.assertEqual(
+            spf_check.rawRecords,
+            [
+                "v=spf1 redirect=_spf.google.com",
+                "_spf.google.com: v=spf1 include:_netblocks.google.com ~all",
+            ],
+        )
+
     def test_spf_lookup_limit_above_ten_returns_error(self) -> None:
         spf_record = "v=spf1 " + " ".join(
             f"include:sender{i}.example.net" for i in range(1, 12)
