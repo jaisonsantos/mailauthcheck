@@ -68,7 +68,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   const [result, setResult] = useState<AggregateResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [copyLabel, setCopyLabel] = useState("Send this report to your developer");
+  const [copyLabel, setCopyLabel] = useState("Copy technical report");
 
   const scoreTone = useMemo(() => {
     if (!result) {
@@ -173,8 +173,8 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
     }
 
     await navigator.clipboard.writeText(buildDeveloperReport(result));
-    setCopyLabel("Report copied");
-    window.setTimeout(() => setCopyLabel("Send this report to your developer"), 1800);
+    setCopyLabel("Technical report copied");
+    window.setTimeout(() => setCopyLabel("Copy technical report"), 1800);
     trackEvent("cta_clicked", {
       tool: config.pathname,
       cta: "send_to_dev",
@@ -385,6 +385,29 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
         </div>
       </section>
 
+      {config.guidePreviews.length > 0 ? (
+        <section className="guides-band">
+          <div className="shell">
+            <div className="section-heading">
+              <p className="eyebrow">Guides</p>
+              <h2>Provider-specific setup guides are the next content layer</h2>
+              <p>
+                The first launch stays focused on the checker. These guide topics are the
+                next practical expansion after validation.
+              </p>
+            </div>
+            <div className="guides-grid">
+              {config.guidePreviews.map((guide) => (
+                <article className="guide-card" key={guide.title}>
+                  <h3>{guide.title}</h3>
+                  <p>{guide.summary}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="faq-band">
         <div className="shell">
           <div className="section-heading">
@@ -407,6 +430,27 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
           </p>
         </div>
       </section>
+
+      <footer className="site-footer">
+        <div className="shell footer-grid">
+          <div>
+            <Link className="brand" href="/" aria-label="MailAuthCheck home">
+              <MailCheck aria-hidden="true" />
+              <span>MailAuthCheck</span>
+            </Link>
+            <p>
+              A focused utility for SPF, DMARC, MX and sender-readiness basics.
+            </p>
+          </div>
+          <nav className="footer-links" aria-label="Footer">
+            <Link href="/">Home</Link>
+            <Link href="/spf-checker">SPF checker</Link>
+            <Link href="/dmarc-checker">DMARC checker</Link>
+            <Link href="/mx-record-checker">MX checker</Link>
+            <Link href="/spf-lookup-counter">SPF lookup counter</Link>
+          </nav>
+        </div>
+      </footer>
     </main>
   );
 }
