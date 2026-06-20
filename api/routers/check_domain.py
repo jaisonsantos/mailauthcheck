@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
 from api.models import AggregateResult, DomainRequest, ErrorResponse
-from api.services.checks import build_aggregate_result
+from api.services.checks import build_aggregate_result, normalize_esp_provider
 from api.services.runtime import (
     domain_hash,
     domain_tld,
@@ -51,7 +51,8 @@ def check_domain(payload: DomainRequest, request: Request) -> AggregateResult | 
             },
         )
 
-    cache_key = f"aggregate:{domain}"
+    esp_provider = normalize_esp_provider(payload.espProvider)
+    cache_key = f"aggregate:{domain}:bulk_sender:{esp_provider or 'unknown'}"
     cached_result = get_cached_response(cache_key, AggregateResult)
     if cached_result is not None:
         log_api_event(
@@ -62,6 +63,7 @@ def check_domain(payload: DomainRequest, request: Request) -> AggregateResult | 
             tld=domain_tld(domain),
             status=cached_result.status,
             score_bucket=score_bucket(cached_result.score),
+            esp_provider=esp_provider,
             failed_checks=[
                 check.checkName
                 for check in cached_result.checks
@@ -93,7 +95,7 @@ def check_domain(payload: DomainRequest, request: Request) -> AggregateResult | 
             },
         )
 
-    result = build_aggregate_result(domain)
+    result = build_aggregate_result(domain, esp_provider)
     store_cached_response(cache_key, result)
     log_api_event(
         "scan_completed",
@@ -103,6 +105,7 @@ def check_domain(payload: DomainRequest, request: Request) -> AggregateResult | 
         tld=domain_tld(domain),
         status=result.status,
         score_bucket=score_bucket(result.score),
+        esp_provider=esp_provider,
         failed_checks=[
             check.checkName for check in result.checks if check.status in {"warning", "missing", "error"}
         ],

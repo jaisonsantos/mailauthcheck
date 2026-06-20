@@ -5,7 +5,7 @@ export function toneFromStatus(status: CheckResult["status"]): "ok" | "warn" | "
     return "ok";
   }
 
-  if (status === "warning") {
+  if (status === "warning" || status === "manual_check" || status === "unknown") {
     return "warn";
   }
 

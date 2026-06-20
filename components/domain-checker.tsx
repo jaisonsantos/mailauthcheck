@@ -17,9 +17,11 @@ import {
 
 import type {
   AggregateResult,
+  BulkComplianceItem,
   CheckListResult,
   CheckResult,
   ErrorResult,
+  ManualCheckResult,
 } from "@/lib/checker-types";
 import { trackEvent } from "@/lib/analytics";
 import { buildLeadCaptureUrl } from "@/lib/lead-capture";
@@ -75,6 +77,79 @@ function ScoreFlags({ result }: { result: AggregateResult }) {
   );
 }
 
+function ManualChecksPanel({ checks }: { checks: ManualCheckResult[] }) {
+  if (checks.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="manual-band">
+      <div className="shell">
+        <div className="section-heading">
+          <p className="eyebrow">Manual checks</p>
+          <h2>These items cannot be verified from DNS</h2>
+          <p>
+            Review these inside your ESP, message headers or provider dashboards before
+            treating a campaign as ready.
+          </p>
+        </div>
+        <div className="manual-grid">
+          {checks.map((check) => (
+            <article className="manual-card" key={check.checkName}>
+              <div className="card-title">
+                <AlertTriangle aria-hidden="true" />
+                <div>
+                  <h3>{check.checkName}</h3>
+                  <span>{check.summary}</span>
+                </div>
+              </div>
+              <p>{check.whyItMatters}</p>
+              <p>{check.howToVerify}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BulkChecklistPanel({
+  title,
+  items,
+}: {
+  title: string;
+  items: BulkComplianceItem[];
+}) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="checklist-band">
+      <div className="shell">
+        <div className="section-heading">
+          <p className="eyebrow">Bulk checklist</p>
+          <h2>{title}</h2>
+        </div>
+        <div className="checklist-list">
+          {items.map((item) => (
+            <article key={`${item.provider}-${item.item}`}>
+              <span className={`checklist-status ${toneFromStatus(item.status)}`}>
+                {item.status === "manual_check" ? "manual" : item.status.replace("_", " ")}
+              </span>
+              <div>
+                <h3>{item.item}</h3>
+                <p>{item.explanation}</p>
+                {item.howToVerify ? <p>{item.howToVerify}</p> : null}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   const [domain, setDomain] = useState("");
   const [espProvider, setEspProvider] = useState("");
@@ -91,6 +166,10 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   }, [config.placeholderResult.score, result]);
 
   const displayResult = result ?? config.placeholderResult;
+  const displayedChecks = displayResult.automatedChecks ?? displayResult.checks;
+  const manualChecks = displayResult.manualChecks ?? [];
+  const gmailChecklist = displayResult.gmailBulkChecklist ?? [];
+  const yahooChecklist = displayResult.yahooBulkChecklist ?? [];
   const leadCaptureUrl = result ? buildLeadCaptureUrl(result, espProvider || undefined) : null;
   const leadCaptureChannel =
     leadCaptureUrl?.startsWith("mailto:") ? "mailto" : leadCaptureUrl ? "external_form" : null;
@@ -349,7 +428,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
           </div>
 
           <div className="cards-grid">
-            {displayResult.checks.map((check) => {
+            {displayedChecks.map((check) => {
               const tone = toneFromStatus(check.status);
               return (
                 <article className={`check-card ${tone}`} key={check.checkName}>
@@ -372,6 +451,12 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
           </div>
         </div>
       </section>
+
+      <ManualChecksPanel checks={manualChecks} />
+
+      <BulkChecklistPanel title="Gmail bulk sender checklist" items={gmailChecklist} />
+
+      <BulkChecklistPanel title="Yahoo bulk sender checklist" items={yahooChecklist} />
 
       <section className="next-steps">
         <div className="shell steps-grid">
@@ -510,6 +595,8 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
           </div>
           <nav className="footer-links" aria-label="Footer">
             <Link href="/">Home</Link>
+            <Link href="/bulk-email-readiness-checker">Bulk readiness</Link>
+            <Link href="/gmail-bulk-sender-requirements">Gmail requirements</Link>
             <Link href="/spf-checker">SPF checker</Link>
             <Link href="/dmarc-checker">DMARC checker</Link>
             <Link href="/mx-record-checker">MX checker</Link>

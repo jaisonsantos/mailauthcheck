@@ -27,7 +27,7 @@ The first version should be:
 - prepared for SEO pages and future lead capture;
 - focused on public DNS checks and explicit manual checklist items.
 
-## What the MVP includes
+## Target MVP scope
 
 - Domain input at the top of the page.
 - Optional ESP selector.
@@ -46,10 +46,18 @@ The first version should be:
 - CTA for assisted setup.
 - Initial SEO pages:
   - `/`
+  - `/bulk-email-readiness-checker`
+  - `/gmail-bulk-sender-requirements`
   - `/spf-checker`
   - `/dmarc-checker`
   - `/mx-record-checker`
   - `/spf-lookup-counter`
+
+## Current implementation status
+
+The current implementation includes the Next.js frontend, FastAPI backend, SPF, DKIM selector-aware signals, DMARC, MX, SPF lookup count, bulk readiness checklist fields, manual check fields, cache, rate limiting, JSON logs, Plausible integration and external lead capture URL support.
+
+Manual checks such as one-click unsubscribe, spam rate and From alignment are shown as manual checks only. They are not marked as passed automatically.
 
 ## What the MVP does not include
 
@@ -101,7 +109,33 @@ The preferred initial stack is:
 - Google Search Console;
 - Plausible or Google Analytics.
 
-This repository starts with documentation only. No implementation files should be added until a specific implementation task is created.
+## Run locally
+
+Install frontend dependencies:
+
+~~~bash
+npm install
+~~~
+
+Start the FastAPI backend:
+
+~~~bash
+python -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/uvicorn api.main:app --reload --host 127.0.0.1 --port 8000
+~~~
+
+Start the Next.js frontend in another terminal:
+
+~~~bash
+NEXT_PUBLIC_MAILAUTHCHECK_API_URL=http://127.0.0.1:8000 npm run dev
+~~~
+
+Then open:
+
+~~~text
+http://localhost:3000
+~~~
 
 ## Documentation map
 

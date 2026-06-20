@@ -246,9 +246,115 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
       },
     ],
     relatedTools: [
+      { href: "/bulk-email-readiness-checker", label: "Bulk readiness" },
+      { href: "/gmail-bulk-sender-requirements", label: "Gmail requirements" },
       { href: "/spf-checker", label: "SPF checker" },
       { href: "/dmarc-checker", label: "DMARC checker" },
-      { href: "/mx-record-checker", label: "MX checker" },
+    ],
+  },
+  bulkReadiness: {
+    pathname: "/bulk-email-readiness-checker",
+    apiPath: "/api/check-domain",
+    title: "Free Bulk Email Readiness Checker",
+    description:
+      "Check whether your domain has the basic DNS signals expected before bulk sending to Gmail and Yahoo.",
+    h1: "Bulk Email Readiness Checker",
+    eyebrow: "Bulk sender DNS readiness",
+    buttonLabel: "Check bulk readiness",
+    intro:
+      "Run a focused bulk sender readiness check before a newsletter, campaign or automation. Review SPF, DKIM selector signals, DMARC, MX, SPF lookups and manual requirements that DNS cannot confirm.",
+    previewSummary:
+      "Run the checker to separate automated DNS checks from manual bulk sender requirements.",
+    resultsHeading: "Bulk sender readiness signals",
+    resultsIntro:
+      "Use the DNS Authentication Score first, then review manual checks before sending campaigns.",
+    placeholderResult: homePreview,
+    guidePreviews: [
+      {
+        title: "Mailchimp Gmail compliance guide",
+        summary:
+          "Planned next: practical setup guidance for Mailchimp domains sending to Gmail recipients.",
+      },
+      {
+        title: "One-click unsubscribe",
+        summary:
+          "Planned next: how to verify unsubscribe support in campaign tools and message headers.",
+      },
+    ],
+    faqs: [
+      {
+        question: "What does this checker verify automatically?",
+        answer:
+          "It checks public DNS signals such as SPF, DKIM selectors, DMARC, MX and SPF lookup count.",
+      },
+      {
+        question: "What still needs manual review?",
+        answer:
+          "One-click unsubscribe, spam rate, From alignment and message formatting usually require ESP dashboards or message headers.",
+      },
+      {
+        question: "Does this guarantee Gmail delivery?",
+        answer:
+          "No. It checks readiness signals, not inbox placement, reputation or campaign performance.",
+      },
+    ],
+    relatedTools: [
+      { href: "/gmail-bulk-sender-requirements", label: "Gmail requirements" },
+      { href: "/dmarc-checker", label: "DMARC checker" },
+      { href: "/spf-checker", label: "SPF checker" },
+      { href: "/spf-lookup-counter", label: "SPF lookup counter" },
+    ],
+  },
+  gmailBulkSenderRequirements: {
+    pathname: "/gmail-bulk-sender-requirements",
+    apiPath: "/api/check-domain",
+    title: "Gmail Bulk Sender Requirements Checker",
+    description:
+      "Review SPF, DKIM, DMARC, unsubscribe and spam-rate readiness for Gmail bulk sender requirements.",
+    h1: "Gmail Bulk Sender Requirements Checker",
+    eyebrow: "Gmail bulk sender checklist",
+    buttonLabel: "Check Gmail readiness",
+    intro:
+      "Check the DNS signals Gmail expects from bulk senders, then review manual requirements like one-click unsubscribe and spam rate outside DNS.",
+    previewSummary:
+      "Run the checker to see which Gmail bulk sender requirements are automated DNS checks and which need manual confirmation.",
+    resultsHeading: "Gmail readiness checklist",
+    resultsIntro:
+      "SPF, DKIM and DMARC can be checked from DNS. Spam rate and unsubscribe support need provider or message-level review.",
+    placeholderResult: homePreview,
+    guidePreviews: [
+      {
+        title: "Google Postmaster Tools guide",
+        summary:
+          "Planned next: how to review spam rate and compliance status in Google's own dashboard.",
+      },
+      {
+        title: "DMARC policy for bulk email",
+        summary:
+          "Planned next: when p=none is enough for minimum readiness and when to move toward enforcement.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Who is a Gmail bulk sender?",
+        answer:
+          "Gmail describes bulk senders as senders that send about 5,000 or more messages to personal Gmail accounts in a 24-hour period.",
+      },
+      {
+        question: "Does Gmail require DKIM?",
+        answer:
+          "For bulk senders, Gmail expects SPF, DKIM and DMARC. DKIM selector checks can be uncertain unless the exact selector is known.",
+      },
+      {
+        question: "Is p=none enough for Gmail?",
+        answer:
+          "A valid DMARC policy can use p=none as minimum/monitoring mode, but it is weaker than quarantine or reject.",
+      },
+    ],
+    relatedTools: [
+      { href: "/bulk-email-readiness-checker", label: "Bulk readiness" },
+      { href: "/dmarc-checker", label: "DMARC checker" },
+      { href: "/spf-checker", label: "SPF checker" },
       { href: "/spf-lookup-counter", label: "SPF lookup counter" },
     ],
   },
