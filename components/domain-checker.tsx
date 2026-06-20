@@ -597,6 +597,8 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
             <Link href="/">Home</Link>
             <Link href="/bulk-email-readiness-checker">Bulk readiness</Link>
             <Link href="/gmail-bulk-sender-requirements">Gmail requirements</Link>
+            <Link href="/dmarc-policy-bulk-email">DMARC policy</Link>
+            <Link href="/guides/mailchimp-gmail-compliance">Mailchimp guide</Link>
             <Link href="/spf-checker">SPF checker</Link>
             <Link href="/dmarc-checker">DMARC checker</Link>
             <Link href="/mx-record-checker">MX checker</Link>

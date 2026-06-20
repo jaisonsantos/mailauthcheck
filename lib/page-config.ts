@@ -210,7 +210,7 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
       {
         title: "Mailchimp Gmail compliance guide",
         summary:
-          "Planned next: a campaign-focused SPF, DKIM and DMARC checklist for Mailchimp senders.",
+          "A campaign-focused SPF, DKIM and DMARC checklist for Mailchimp senders.",
       },
       {
         title: "Google Postmaster Tools guide",
@@ -248,8 +248,9 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     relatedTools: [
       { href: "/bulk-email-readiness-checker", label: "Bulk readiness" },
       { href: "/gmail-bulk-sender-requirements", label: "Gmail requirements" },
+      { href: "/dmarc-policy-bulk-email", label: "DMARC policy" },
+      { href: "/guides/mailchimp-gmail-compliance", label: "Mailchimp guide" },
       { href: "/spf-checker", label: "SPF checker" },
-      { href: "/dmarc-checker", label: "DMARC checker" },
     ],
   },
   bulkReadiness: {
@@ -273,7 +274,7 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
       {
         title: "Mailchimp Gmail compliance guide",
         summary:
-          "Planned next: practical setup guidance for Mailchimp domains sending to Gmail recipients.",
+          "Practical setup guidance for Mailchimp domains sending to Gmail recipients.",
       },
       {
         title: "One-click unsubscribe",
@@ -300,9 +301,10 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     ],
     relatedTools: [
       { href: "/gmail-bulk-sender-requirements", label: "Gmail requirements" },
+      { href: "/dmarc-policy-bulk-email", label: "DMARC policy" },
+      { href: "/guides/mailchimp-gmail-compliance", label: "Mailchimp guide" },
       { href: "/dmarc-checker", label: "DMARC checker" },
       { href: "/spf-checker", label: "SPF checker" },
-      { href: "/spf-lookup-counter", label: "SPF lookup counter" },
     ],
   },
   gmailBulkSenderRequirements: {
@@ -331,7 +333,7 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
       {
         title: "DMARC policy for bulk email",
         summary:
-          "Planned next: when p=none is enough for minimum readiness and when to move toward enforcement.",
+          "When p=none is enough for minimum readiness and when to move toward enforcement.",
       },
     ],
     faqs: [
@@ -353,9 +355,126 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     ],
     relatedTools: [
       { href: "/bulk-email-readiness-checker", label: "Bulk readiness" },
+      { href: "/dmarc-policy-bulk-email", label: "DMARC policy" },
+      { href: "/guides/mailchimp-gmail-compliance", label: "Mailchimp guide" },
       { href: "/dmarc-checker", label: "DMARC checker" },
       { href: "/spf-checker", label: "SPF checker" },
-      { href: "/spf-lookup-counter", label: "SPF lookup counter" },
+    ],
+  },
+  dmarcPolicyBulkEmail: {
+    pathname: "/dmarc-policy-bulk-email",
+    apiPath: "/api/dmarc",
+    title: "DMARC Policy for Bulk Email",
+    description:
+      "Understand p=none, quarantine and reject for Gmail and Yahoo bulk sender readiness.",
+    h1: "DMARC Policy for Bulk Email",
+    eyebrow: "DMARC policy guidance",
+    buttonLabel: "Check DMARC policy",
+    intro:
+      "Review your domain's DMARC policy and understand what p=none, quarantine and reject mean before bulk campaigns to Gmail and Yahoo recipients.",
+    previewSummary:
+      "Run the checker to see the current DMARC policy, then use the explanation below to decide whether monitoring or stronger enforcement is the right next step.",
+    resultsHeading: "DMARC policy status and next step",
+    resultsIntro:
+      "This page stays focused on DMARC policy interpretation for bulk sending. SPF and DKIM still matter, but the main question here is whether your DMARC policy is present and how strong it is.",
+    placeholderResult: dmarcPreview,
+    guidePreviews: [
+      {
+        title: "Google Postmaster Tools guide",
+        summary:
+          "Planned next: review spam rate and reputation signals after DMARC is stable.",
+      },
+      {
+        title: "Mailchimp Gmail compliance guide",
+        summary:
+          "Use the Mailchimp guide when your campaigns depend on provider-specific DKIM selectors and unsubscribe settings.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Is p=none enough?",
+        answer:
+          "For minimum/monitoring mode, yes. It satisfies the basic DMARC requirement for many bulk-sender checks, but it does not tell receivers to quarantine or reject failing mail.",
+      },
+      {
+        question: "When should I move to quarantine or reject?",
+        answer:
+          "Move only after confirming legitimate senders pass SPF or DKIM alignment. Tightening policy too early can break valid traffic.",
+      },
+      {
+        question: "What is DMARC alignment?",
+        answer:
+          "Alignment means the authenticated SPF or DKIM domain matches the domain used in the visible From address closely enough for DMARC to pass.",
+      },
+    ],
+    relatedTools: [
+      { href: "/gmail-bulk-sender-requirements", label: "Gmail requirements" },
+      { href: "/bulk-email-readiness-checker", label: "Bulk readiness" },
+      { href: "/dmarc-checker", label: "DMARC checker" },
+      { href: "/guides/mailchimp-gmail-compliance", label: "Mailchimp guide" },
+    ],
+  },
+  mailchimpGmailCompliance: {
+    pathname: "/guides/mailchimp-gmail-compliance",
+    apiPath: "/api/check-domain",
+    title: "Mailchimp Gmail Compliance Guide",
+    description:
+      "Check SPF, DKIM, DMARC and manual Gmail bulk sender requirements for Mailchimp campaigns.",
+    h1: "Mailchimp Gmail Compliance Guide",
+    eyebrow: "Mailchimp setup guide",
+    buttonLabel: "Check Mailchimp setup",
+    intro:
+      "Use this guide when you send campaigns from Mailchimp and want to confirm the domain has the right DNS basics plus the manual Gmail bulk sender checks that Mailchimp alone does not prove.",
+    previewSummary:
+      "Run the checker with Mailchimp selected to review common DKIM selectors, DMARC policy, SPF, MX and the manual checks that still need confirmation.",
+    resultsHeading: "Mailchimp domain readiness",
+    resultsIntro:
+      "This page reuses the main checker, but frames the result around Mailchimp setup and the Gmail requirements most likely to matter before a campaign.",
+    placeholderResult: {
+      ...homePreview,
+      espProvider: "mailchimp",
+      summary:
+        "example.com has several Mailchimp-related DNS basics in place, but DKIM selector confirmation and manual Gmail requirements still need review.",
+      nextSteps: [
+        "Confirm the exact DKIM selector in Mailchimp's domain authentication page before changing DNS.",
+        "Keep exactly one SPF record for the domain and avoid duplicate SPF TXT records.",
+        "Review one-click unsubscribe behavior and spam-rate monitoring outside DNS before your next campaign.",
+      ],
+    },
+    guidePreviews: [
+      {
+        title: "DMARC policy for bulk email",
+        summary:
+          "Use the DMARC policy page when Mailchimp is authenticated but your enforcement mode is still unclear.",
+      },
+      {
+        title: "Google Postmaster Tools guide",
+        summary:
+          "Planned next: review spam rate and compliance signals after Mailchimp authentication is stable.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Which DKIM selectors does Mailchimp use?",
+        answer:
+          "Mailchimp can use provider-specific selectors that vary by account or setup. Common selectors are a useful hint, but the exact selector should be confirmed in Mailchimp's authentication page.",
+      },
+      {
+        question: "Does Mailchimp handle one-click unsubscribe?",
+        answer:
+          "Mailchimp can help with unsubscribe behavior, but this checker does not verify live message headers or campaign settings automatically. Review the message-level setup before sending.",
+      },
+      {
+        question: "What should I verify in Postmaster Tools?",
+        answer:
+          "Review spam rate, domain reputation and any compliance warnings after authentication is in place. Those checks sit outside public DNS.",
+      },
+    ],
+    relatedTools: [
+      { href: "/bulk-email-readiness-checker", label: "Bulk readiness" },
+      { href: "/gmail-bulk-sender-requirements", label: "Gmail requirements" },
+      { href: "/dmarc-policy-bulk-email", label: "DMARC policy" },
+      { href: "/spf-checker", label: "SPF checker" },
     ],
   },
   spf: {

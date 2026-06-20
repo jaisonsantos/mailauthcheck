@@ -80,7 +80,7 @@ The MVP must not include:
 - BIMI;
 - MTA-STS;
 - TLS-RPT;
-- email header analyzer.
+- email header analyzer;
 - ESP API integrations;
 - email list verification;
 - email content scanning;
@@ -134,6 +134,9 @@ python -m venv .venv
 Start the Next.js frontend in another terminal:
 
 ~~~bash
+nvm install 20
+nvm use 20
+node -v
 NEXT_PUBLIC_MAILAUTHCHECK_API_URL=http://127.0.0.1:8000 npm run dev
 ~~~
 

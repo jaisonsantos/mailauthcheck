@@ -47,8 +47,8 @@ It should be used after specific implementation tasks exist. It does not authori
 - [x] `/` has a unique title and meta description.
 - [x] `/bulk-email-readiness-checker` has a unique title and meta description.
 - [x] `/gmail-bulk-sender-requirements` has a unique title and meta description.
-- [ ] `/dmarc-policy-bulk-email` has a unique title and meta description.
-- [ ] `/guides/mailchimp-gmail-compliance` has a unique title and meta description.
+- [x] `/dmarc-policy-bulk-email` has a unique title and meta description.
+- [x] `/guides/mailchimp-gmail-compliance` has a unique title and meta description.
 - [x] `/spf-checker` has a unique title and meta description.
 - [x] `/dmarc-checker` has a unique title and meta description.
 - [x] `/mx-record-checker` has a unique title and meta description.
