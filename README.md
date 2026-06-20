@@ -111,6 +111,12 @@ The preferred initial stack is:
 
 ## Run locally
 
+Node.js:
+
+- Use `Node.js >= 18.18.0`.
+- `Next.js 15.5.19` will not start with `18.17.0`.
+- Check your local version with `node -v`.
+
 Install frontend dependencies:
 
 ~~~bash
