@@ -56,11 +56,11 @@ It should be used after specific implementation tasks exist. It does not authori
 
 ## Analytics
 
-- [ ] `page_view` is tracked.
-- [ ] `scan_started` is tracked.
-- [ ] `scan_completed` is tracked.
-- [ ] `scan_failed` is tracked.
-- [ ] `cta_clicked` is tracked.
+- [x] `page_view` is tracked.
+- [x] `scan_started` is tracked.
+- [x] `scan_completed` is tracked.
+- [x] `scan_failed` is tracked.
+- [x] `cta_clicked` is tracked.
 - [ ] `lead_submitted` is tracked.
 - [ ] Scan error rate can be reviewed.
 - [ ] CTA clicks can be separated by CTA type.
@@ -68,16 +68,16 @@ It should be used after specific implementation tasks exist. It does not authori
 
 ## Lead Capture
 
-- [ ] A visible CTA exists after relevant scan results.
-- [ ] Lead capture uses an external form or simple non-database approach where possible.
+- [x] A visible CTA exists after relevant scan results.
+- [x] Lead capture uses an external form or simple non-database approach where possible.
 - [ ] Form captures email.
-- [ ] Form captures domain.
-- [ ] Form captures detected problem or issue summary.
+- [x] Form captures domain.
+- [x] Form captures detected problem or issue summary.
 - [ ] Optional message field exists.
 - [ ] Confirmation message is shown after submission.
-- [ ] Privacy/disclaimer copy is visible.
-- [ ] No checkout exists.
-- [ ] No paid plan language is required.
+- [x] Privacy/disclaimer copy is visible.
+- [x] No checkout exists.
+- [x] No paid plan language is required.
 
 ## Launch
 

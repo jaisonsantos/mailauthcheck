@@ -14,7 +14,7 @@ The MVP should avoid unnecessary infrastructure.
 - **Cache:** in-memory TTL cache
 - **Rate limit:** basic IP/domain-based rate limiting
 - **Logs:** structured JSON logs
-- **Analytics:** Plausible or Google Analytics
+- **Analytics:** Plausible
 - **SEO:** Google Search Console
 
 ## Why Next.js + FastAPI
@@ -68,7 +68,7 @@ For validation, use:
 
 - analytics events;
 - JSON logs;
-- optional external lead form;
+- external lead form;
 - Search Console data.
 
 ## Suggested deployment
@@ -77,9 +77,29 @@ For validation, use:
 |---|---|
 | Frontend | Vercel or Cloudflare Pages |
 | Backend | Render, Fly.io, Railway, or small VPS |
-| Analytics | Plausible or Google Analytics |
+| Analytics | Plausible |
 | SEO | Google Search Console |
-| Forms | Tally, Formspree, Google Forms, or similar |
+| Forms | external hosted form URL such as Tally, Formspree, Google Forms, or similar |
+
+## Frontend analytics
+
+Use a lightweight client-side analytics helper.
+
+Current MVP implementation target:
+
+- Plausible script loaded only when `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` is configured;
+- automatic page views handled by Plausible;
+- custom events for scans, CTA clicks and lead clicks sent from the checker UI;
+- no cookies or internal event storage required in the repo.
+
+Suggested event names:
+
+- `scan_started`
+- `scan_completed`
+- `scan_failed`
+- `cta_help_clicked`
+- `cta_send_to_dev_clicked`
+- `lead_form_started`
 
 ## Cache
 
@@ -141,6 +161,18 @@ Avoid logging:
 - email addresses without explicit consent;
 - full domain history indefinitely;
 - sensitive user-provided content.
+
+## Lead capture
+
+Use an external hosted form URL for MVP setup requests.
+
+Current MVP implementation target:
+
+- configure `NEXT_PUBLIC_LEAD_CAPTURE_URL`;
+- prefill domain, status and main issues in the outbound link when possible;
+- open the form in a new tab;
+- keep privacy/disclaimer copy near the CTA;
+- do not store leads inside the application.
 
 ## Future folder structure reference
 

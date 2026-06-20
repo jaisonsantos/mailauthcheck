@@ -21,6 +21,8 @@ import type {
   CheckResult,
   ErrorResult,
 } from "@/lib/checker-types";
+import { trackEvent } from "@/lib/analytics";
+import { buildLeadCaptureUrl } from "@/lib/lead-capture";
 import type { CheckerPageConfig } from "@/lib/page-config";
 import { buildDeveloperReport, statusLabel, toneFromStatus } from "@/lib/report";
 
@@ -76,9 +78,15 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   }, [config.placeholderResult.score, result]);
 
   const displayResult = result ?? config.placeholderResult;
+  const leadCaptureUrl = result ? buildLeadCaptureUrl(result) : null;
 
-async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const normalizedDomain = domain.trim().toLowerCase();
+    trackEvent("scan_started", {
+      tool: config.pathname,
+      domain_entered: normalizedDomain.length > 0,
+    });
     setIsLoading(true);
     setErrorMessage(null);
 
@@ -113,19 +121,47 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
             ? payload.message
             : "The DNS check could not be completed right now.",
         );
+        trackEvent("scan_failed", {
+          tool: config.pathname,
+          domain: normalizedDomain || null,
+          error:
+            "error" in payload && typeof payload.error === "string"
+              ? payload.error
+              : "request_failed",
+          status_code: response.status,
+        });
         return;
       }
 
       if ("score" in payload) {
-        setResult(payload as AggregateResult);
+        const aggregateResult = payload as AggregateResult;
+        setResult(aggregateResult);
+        trackEvent("scan_completed", {
+          tool: config.pathname,
+          domain: aggregateResult.domain,
+          status: aggregateResult.status,
+          score: aggregateResult.score,
+        });
       } else {
-        setResult(normalizeCheckListResult(payload as CheckListResult));
+        const normalizedResult = normalizeCheckListResult(payload as CheckListResult);
+        setResult(normalizedResult);
+        trackEvent("scan_completed", {
+          tool: config.pathname,
+          domain: normalizedResult.domain,
+          status: normalizedResult.status,
+          score: normalizedResult.score,
+        });
       }
     } catch {
       setResult(null);
       setErrorMessage(
         "The checker could not reach the API. Make sure the FastAPI service is running.",
       );
+      trackEvent("scan_failed", {
+        tool: config.pathname,
+        domain: normalizedDomain || null,
+        error: "network_error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -139,6 +175,40 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     await navigator.clipboard.writeText(buildDeveloperReport(result));
     setCopyLabel("Report copied");
     window.setTimeout(() => setCopyLabel("Send this report to your developer"), 1800);
+    trackEvent("cta_clicked", {
+      tool: config.pathname,
+      cta: "send_to_dev",
+      domain: result.domain,
+      status: result.status,
+    });
+    trackEvent("cta_send_to_dev_clicked", {
+      tool: config.pathname,
+      domain: result.domain,
+      status: result.status,
+    });
+  }
+
+  function handleHelpClick() {
+    if (!result) {
+      return;
+    }
+
+    trackEvent("cta_clicked", {
+      tool: config.pathname,
+      cta: "help",
+      domain: result.domain,
+      status: result.status,
+    });
+    trackEvent("cta_help_clicked", {
+      tool: config.pathname,
+      domain: result.domain,
+      status: result.status,
+    });
+    trackEvent("lead_form_started", {
+      tool: config.pathname,
+      domain: result.domain,
+      status: result.status,
+    });
   }
 
   return (
@@ -266,15 +336,35 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
             </p>
           </div>
           <div className="cta-actions">
-            <button type="button">
-              <Wrench aria-hidden="true" />
-              Need help fixing this?
-            </button>
+            {result && leadCaptureUrl ? (
+              <a
+                href={leadCaptureUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={handleHelpClick}
+              >
+                <Wrench aria-hidden="true" />
+                Need help fixing this?
+              </a>
+            ) : (
+              <button type="button" disabled>
+                <Wrench aria-hidden="true" />
+                Need help fixing this?
+              </button>
+            )}
             <button className="secondary" type="button" onClick={handleCopyReport}>
               <Copy aria-hidden="true" />
               {copyLabel}
             </button>
           </div>
+          <p className="cta-note">
+            {result
+              ? "This opens a simple external contact form and pre-fills the domain and main issues."
+              : "Run a scan first to pre-fill the domain and main issues in the help request."}
+          </p>
+          <p className="cta-note">
+            It can help with visible DNS authentication issues, but it does not guarantee inbox placement.
+          </p>
         </div>
       </section>
 

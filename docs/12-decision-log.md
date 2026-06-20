@@ -16,12 +16,12 @@ Every scope or architecture change should be added here.
 | 2026-06-19 | Do not implement login, dashboard or Stripe in MVP. | These features create SaaS complexity before validation. | Protects scope and keeps launch small. | Accepted |
 | 2026-06-20 | Keep MVP executable code at repository root for now. | The current codebase is still small, and a monorepo `apps/` split would add structure before it reduces complexity. | Frontend lives in root `app/`; backend skeleton lives in root `api/` until growth justifies a move. | Accepted |
 | 2026-06-20 | Use in-memory fixed-window protections for MVP runtime. | The utility needs basic abuse protection and repeat-scan efficiency without adding Redis, a database or queueing infrastructure. | MVP uses 15-minute TTL cache, basic IP/domain rate limits and JSON API logs in-process. | Accepted |
+| 2026-06-20 | Use Plausible for MVP analytics. | It adds lightweight event tracking without cookies, heavy setup or internal persistence. | Frontend can track page views and key validation events through one script and a small client helper. | Accepted |
+| 2026-06-20 | Use an external lead form URL for MVP setup requests. | Lead capture must work without a database, account model or internal submission backend. | CTAs open an external form with domain and issue context prefilled when configured. | Accepted |
 
 ## Pending decisions
 
 | Date | Pending decision | Why it matters | Owner | Status |
 |---|---|---|---|---|
 | 2026-06-19 | Choose backend hosting provider. | DNS latency and cold starts affect UX. | Technical | Pending |
-| 2026-06-19 | Choose analytics tool: Plausible or Google Analytics. | Analytics must track validation without adding complexity. | Product/technical | Pending |
-| 2026-06-19 | Choose lead capture method. | External form avoids database; custom form may improve UX. | Product/technical | Pending |
 | 2026-06-19 | Decide if Spanish content should start after validation or after first traction. | User lives in Spain, but initial SEO should be English. | SEO/product | Pending |
