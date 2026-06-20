@@ -79,6 +79,8 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
 
   const displayResult = result ?? config.placeholderResult;
   const leadCaptureUrl = result ? buildLeadCaptureUrl(result) : null;
+  const leadCaptureChannel =
+    leadCaptureUrl?.startsWith("mailto:") ? "mailto" : leadCaptureUrl ? "external_form" : null;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -172,20 +174,41 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       return;
     }
 
-    await navigator.clipboard.writeText(buildDeveloperReport(result));
-    setCopyLabel("Technical report copied");
-    window.setTimeout(() => setCopyLabel("Copy technical report"), 1800);
-    trackEvent("cta_clicked", {
-      tool: config.pathname,
-      cta: "send_to_dev",
-      domain: result.domain,
-      status: result.status,
-    });
-    trackEvent("cta_send_to_dev_clicked", {
-      tool: config.pathname,
-      domain: result.domain,
-      status: result.status,
-    });
+    const report = buildDeveloperReport(result);
+
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("clipboard_unavailable");
+      }
+
+      await navigator.clipboard.writeText(report);
+      setCopyLabel("Technical report copied");
+      window.setTimeout(() => setCopyLabel("Copy technical report"), 1800);
+      trackEvent("cta_clicked", {
+        tool: config.pathname,
+        cta: "send_to_dev",
+        cta_type: "copy_report",
+        domain: result.domain,
+        status: result.status,
+      });
+      trackEvent("cta_send_to_dev_clicked", {
+        tool: config.pathname,
+        cta_type: "copy_report",
+        domain: result.domain,
+        status: result.status,
+      });
+    } catch {
+      setCopyLabel("Copy failed");
+      window.setTimeout(() => setCopyLabel("Copy technical report"), 1800);
+      trackEvent("cta_clicked", {
+        tool: config.pathname,
+        cta: "send_to_dev",
+        cta_type: "copy_report",
+        domain: result.domain,
+        status: result.status,
+        outcome: "copy_failed",
+      });
+    }
   }
 
   function handleHelpClick() {
@@ -196,18 +219,23 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
     trackEvent("cta_clicked", {
       tool: config.pathname,
       cta: "help",
+      cta_type: "assisted_setup",
       domain: result.domain,
       status: result.status,
+      lead_channel: leadCaptureChannel,
     });
     trackEvent("cta_help_clicked", {
       tool: config.pathname,
+      cta_type: "assisted_setup",
       domain: result.domain,
       status: result.status,
+      lead_channel: leadCaptureChannel,
     });
     trackEvent("lead_form_started", {
       tool: config.pathname,
       domain: result.domain,
       status: result.status,
+      lead_channel: leadCaptureChannel,
     });
   }
 
