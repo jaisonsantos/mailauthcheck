@@ -10,6 +10,11 @@ export type ToolLink = {
   label: string;
 };
 
+export type GuidePreview = {
+  title: string;
+  summary: string;
+};
+
 export type CheckerPageConfig = {
   pathname: string;
   apiPath: string;
@@ -23,6 +28,7 @@ export type CheckerPageConfig = {
   resultsHeading: string;
   resultsIntro: string;
   placeholderResult: AggregateResult;
+  guidePreviews: GuidePreview[];
   faqs: FAQItem[];
   relatedTools: ToolLink[];
 };
@@ -186,6 +192,23 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsHeading: "One scan, five basic readiness signals",
     resultsIntro: "Review the combined check first, then inspect individual cards and raw DNS records.",
     placeholderResult: homePreview,
+    guidePreviews: [
+      {
+        title: "Google Workspace setup guide",
+        summary:
+          "Planned next: a clear SPF, DKIM and DMARC checklist for common Google Workspace setups.",
+      },
+      {
+        title: "Microsoft 365 setup guide",
+        summary:
+          "Planned next: a practical domain-authentication guide for Microsoft 365 sender setup.",
+      },
+      {
+        title: "Mailchimp setup guide",
+        summary:
+          "Planned next: a focused walkthrough for SPF, DKIM and DMARC around Mailchimp sending domains.",
+      },
+    ],
     faqs: [
       {
         question: "What is SPF?",
@@ -201,6 +224,11 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
         question: "Does this guarantee inbox placement?",
         answer:
           "No. MailAuthCheck only checks public DNS authentication signals and basic sender-readiness indicators.",
+      },
+      {
+        question: "What does Gmail/Yahoo readiness mean?",
+        answer:
+          "It is a basic signal that SPF, DMARC and related sender checks are present. It is not a deliverability guarantee.",
       },
     ],
     relatedTools: [
@@ -226,6 +254,7 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsHeading: "Focused SPF result",
     resultsIntro: "This page stays focused on SPF policy quality and SPF DNS lookup pressure.",
     placeholderResult: spfPreview,
+    guidePreviews: [],
     faqs: [
       {
         question: "Can I have multiple SPF records?",
@@ -263,6 +292,7 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsHeading: "Focused DMARC result",
     resultsIntro: "This page stays focused on DMARC presence, policy mode and the next enforcement step.",
     placeholderResult: dmarcPreview,
+    guidePreviews: [],
     faqs: [
       {
         question: "What is p=none?",
@@ -300,6 +330,7 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsHeading: "Focused MX result",
     resultsIntro: "This page stays focused on mail routing, MX hosts and domains that do not accept incoming mail.",
     placeholderResult: mxPreview,
+    guidePreviews: [],
     faqs: [
       {
         question: "What is an MX record?",
@@ -338,6 +369,7 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsHeading: "Focused SPF lookup result",
     resultsIntro: "This page stays focused on lookup-heavy SPF policies and the 10-lookup limit.",
     placeholderResult: spfLookupPreview,
+    guidePreviews: [],
     faqs: [
       {
         question: "Why is there a 10 lookup limit?",
