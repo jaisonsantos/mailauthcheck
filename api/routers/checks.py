@@ -4,7 +4,11 @@ from fastapi import APIRouter, Query, status
 from fastapi.responses import JSONResponse
 
 from api.models import CheckListResponse, ErrorResponse
-from api.services.placeholder_results import build_single_check_response
+from api.services.checks import (
+    build_dmarc_response,
+    build_mx_response,
+    build_spf_response,
+)
 from api.validation import DomainValidationError, normalize_domain
 
 
@@ -29,11 +33,7 @@ def get_spf(domain: str = Query(..., min_length=1)) -> CheckListResponse | JSONR
     normalized_domain = _normalize_or_raise(domain)
     if isinstance(normalized_domain, JSONResponse):
         return normalized_domain
-    return build_single_check_response(
-        normalized_domain,
-        "SPF",
-        "SPF placeholder result is available, but DNS lookup is not wired yet.",
-    )
+    return build_spf_response(normalized_domain)
 
 
 @router.get("/dmarc", response_model=CheckListResponse, responses={400: {"model": ErrorResponse}})
@@ -41,11 +41,7 @@ def get_dmarc(domain: str = Query(..., min_length=1)) -> CheckListResponse | JSO
     normalized_domain = _normalize_or_raise(domain)
     if isinstance(normalized_domain, JSONResponse):
         return normalized_domain
-    return build_single_check_response(
-        normalized_domain,
-        "DMARC",
-        "DMARC placeholder result is available, but DNS lookup is not wired yet.",
-    )
+    return build_dmarc_response(normalized_domain)
 
 
 @router.get("/mx", response_model=CheckListResponse, responses={400: {"model": ErrorResponse}})
@@ -53,8 +49,4 @@ def get_mx(domain: str = Query(..., min_length=1)) -> CheckListResponse | JSONRe
     normalized_domain = _normalize_or_raise(domain)
     if isinstance(normalized_domain, JSONResponse):
         return normalized_domain
-    return build_single_check_response(
-        normalized_domain,
-        "MX",
-        "MX placeholder result is available, but DNS lookup is not wired yet.",
-    )
+    return build_mx_response(normalized_domain)

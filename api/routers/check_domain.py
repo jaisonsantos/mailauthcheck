@@ -4,7 +4,7 @@ from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 
 from api.models import AggregateResult, DomainRequest, ErrorResponse
-from api.services.placeholder_results import build_aggregate_result
+from api.services.checks import build_aggregate_result
 from api.validation import DomainValidationError, normalize_domain
 
 
