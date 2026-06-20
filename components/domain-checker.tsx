@@ -32,7 +32,7 @@ import { buildDeveloperReport, toneFromStatus } from "@/lib/report";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_MAILAUTHCHECK_API_URL ?? "http://127.0.0.1:8000";
-const SHOW_LOCALE_SELECTOR = false;
+const SHOW_LOCALE_SELECTOR = true;
 
 type Locale = "en" | "es" | "pt";
 type Theme = "light" | "dark";
@@ -116,35 +116,35 @@ const chromeCopy = {
     language: "Idioma",
     themeLight: "Claro",
     themeDark: "Oscuro",
-    publicDns: "Checks DNS publicos",
+    publicDns: "Verificacion DNS publica",
     noAccount: "Sin cuenta",
-    noInbox: "Sin garantia de inbox",
+    noInbox: "Sin garantia de entrega",
     domain: "Dominio",
     esp: "Proveedor de email",
     helper:
       "Escribe un dominio como example.com. Elige un ESP si sabes que servicio envia tus campanas.",
     loading: "Consultando DNS publicos...",
-    liveChecker: "Checker en vivo",
-    runCheck: "Ejecuta un check",
+    liveChecker: "Verificador en vivo",
+    runCheck: "Ejecutar verificacion",
     ready: "Listo",
     needsAttention: "Necesita atencion",
     notReady: "No listo",
     resultCards: "Resultados",
-    manualChecks: "Checks manuales",
+    manualChecks: "Revisiones manuales",
     manualTitle: "Revision manual requerida",
     manualIntro:
       "Estos puntos no se pueden verificar solo con DNS. Revisalos dentro de tu ESP, cabeceras de mensajes o paneles del proveedor antes de tratar una campana como lista.",
-    bulkChecklist: "Checklist bulk",
-    gmailChecklistTitle: "Checklist bulk sender de Gmail",
-    yahooChecklistTitle: "Checklist bulk sender de Yahoo",
+    bulkChecklist: "Checklist de envio masivo",
+    gmailChecklistTitle: "Checklist de remitente masivo para Gmail",
+    yahooChecklistTitle: "Checklist de remitente masivo para Yahoo",
     manualStatus: "manual",
     nextSteps: "Proximos pasos",
     nextTitle: "Corrige primero lo mas importante",
     nextIntro:
       "El resultado empieza con lenguaje claro y deja los detalles tecnicos y registros DNS visibles para developers y agencias.",
     howLabel: "Como funciona",
-    howTitle: "Que puedes clicar en esta pagina",
-    howScanTitle: "Ejecutar el checker",
+    howTitle: "Que puedes hacer en esta pagina",
+    howScanTitle: "Ejecutar el verificador",
     howScan:
       "Escribe un dominio, opcionalmente elige el ESP y pulsa el boton principal. Esta es la unica accion que ejecuta checks DNS.",
     howReportTitle: "Copiar reporte tecnico",
@@ -154,10 +154,10 @@ const chromeCopy = {
     howHelp:
       "Despues de un scan, el CTA de ayuda abre un flujo ligero de contacto. No hay login, checkout ni dashboard.",
     helpLabel: "CTA de ayuda",
-    helpTitle: "Need help fixing this?",
+    helpTitle: "Necesitas ayuda para corregirlo?",
     helpIntro:
       "Se mantiene ligero. Apunta a ayuda manual de setup sin cuentas, checkout ni dashboard.",
-    helpButton: "Need help fixing this?",
+    helpButton: "Necesitas ayuda para corregirlo?",
     helpUnavailable: "Ejecuta un scan para pedir ayuda",
     copyReport: "Copiar reporte tecnico",
     copyCopied: "Reporte tecnico copiado",
@@ -169,50 +169,50 @@ const chromeCopy = {
     guaranteeNote:
       "Puede ayudar con problemas visibles de autenticacion DNS, pero no garantiza inbox placement.",
     relatedLabel: "Herramientas relacionadas",
-    relatedTitle: "Herramientas enfocadas para un check por vez",
+    relatedTitle: "Herramientas enfocadas, una verificacion cada vez",
     guidesLabel: "Guias",
-    guidesTitle: "Guias practicas de setup",
+    guidesTitle: "Guias practicas de configuracion",
     guidesIntro:
       "Estas guias explican las partes manuales que DNS publico no puede comprobar.",
     faqLabel: "FAQ",
     faqTitle: "Respuestas claras",
     disclaimer: "Disclaimer:",
-    footer: "Una utilidad enfocada para SPF, DKIM, DMARC, MX y readiness de bulk senders.",
+    footer: "Una herramienta enfocada en SPF, DKIM, DMARC, MX y readiness para remitentes masivos.",
     noRawRecord: "No hay registro raw para mostrar en este check.",
   },
   pt: {
     language: "Idioma",
     themeLight: "Claro",
     themeDark: "Escuro",
-    publicDns: "Checks DNS publicos",
+    publicDns: "Verificacao DNS publica",
     noAccount: "Sem conta",
-    noInbox: "Sem garantia de inbox",
+    noInbox: "Sem garantia de entrega",
     domain: "Dominio",
     esp: "Provedor de email",
     helper:
       "Digite um dominio como example.com. Escolha um ESP se souber qual servico envia suas campanhas.",
     loading: "Consultando DNS publicos...",
-    liveChecker: "Checker ao vivo",
-    runCheck: "Rodar check",
+    liveChecker: "Verificador ao vivo",
+    runCheck: "Executar verificacao",
     ready: "Pronto",
     needsAttention: "Precisa de atencao",
     notReady: "Nao pronto",
     resultCards: "Resultados",
-    manualChecks: "Checks manuais",
+    manualChecks: "Revisoes manuais",
     manualTitle: "Revisao manual obrigatoria",
     manualIntro:
       "Estes itens nao podem ser verificados apenas por DNS. Revise isso no ESP, nos headers da mensagem ou nos paineis do provedor antes de considerar uma campanha pronta.",
-    bulkChecklist: "Checklist bulk",
-    gmailChecklistTitle: "Checklist bulk sender do Gmail",
-    yahooChecklistTitle: "Checklist bulk sender do Yahoo",
+    bulkChecklist: "Checklist de envio em massa",
+    gmailChecklistTitle: "Checklist de remetente em massa para Gmail",
+    yahooChecklistTitle: "Checklist de remetente em massa para Yahoo",
     manualStatus: "manual",
     nextSteps: "Proximos passos",
     nextTitle: "Corrija primeiro o que importa",
     nextIntro:
       "O resultado comeca em linguagem simples e mantem detalhes tecnicos e registros DNS visiveis para developers e agencias.",
     howLabel: "Como funciona",
-    howTitle: "Onde clicar nesta pagina",
-    howScanTitle: "Rodar o checker",
+    howTitle: "O que voce pode fazer nesta pagina",
+    howScanTitle: "Executar o verificador",
     howScan:
       "Digite um dominio, opcionalmente escolha o ESP e clique no botao principal. Essa e a unica acao que executa checks DNS.",
     howReportTitle: "Copiar relatorio tecnico",
@@ -222,10 +222,10 @@ const chromeCopy = {
     howHelp:
       "Depois de um scan, o CTA de ajuda abre um fluxo leve de contato. Nao ha login, checkout ou dashboard.",
     helpLabel: "CTA de ajuda",
-    helpTitle: "Need help fixing this?",
+    helpTitle: "Precisa de ajuda para corrigir isso?",
     helpIntro:
       "Isso continua leve. Aponta para ajuda manual de setup sem contas, checkout ou dashboard.",
-    helpButton: "Need help fixing this?",
+    helpButton: "Precisa de ajuda para corrigir isso?",
     helpUnavailable: "Rode um scan para pedir ajuda",
     copyReport: "Copiar relatorio tecnico",
     copyCopied: "Relatorio tecnico copiado",
@@ -237,15 +237,15 @@ const chromeCopy = {
     guaranteeNote:
       "Pode ajudar com problemas visiveis de autenticacao DNS, mas nao garante inbox placement.",
     relatedLabel: "Ferramentas relacionadas",
-    relatedTitle: "Ferramentas focadas para um check por vez",
+    relatedTitle: "Ferramentas focadas, uma verificacao por vez",
     guidesLabel: "Guias",
-    guidesTitle: "Guias praticos de setup",
+    guidesTitle: "Guias praticos de configuracao",
     guidesIntro:
       "Estes guias explicam as partes manuais que DNS publico nao consegue provar.",
     faqLabel: "FAQ",
     faqTitle: "Respostas claras",
     disclaimer: "Disclaimer:",
-    footer: "Uma utility focada em SPF, DKIM, DMARC, MX e bulk sender readiness.",
+    footer: "Uma ferramenta focada em SPF, DKIM, DMARC, MX e readiness para remetentes em massa.",
     noRawRecord: "Nao ha registro raw para mostrar neste check.",
   },
 } satisfies Record<Locale, Record<string, string>>;
@@ -254,9 +254,9 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
   en: {},
   es: {
     "/": {
-      eyebrow: "Readiness para bulk senders Gmail/Yahoo",
-      h1: "Bulk Email Readiness Checker",
-      buttonLabel: "Check bulk readiness",
+      eyebrow: "Preparacion para remitentes masivos en Gmail y Yahoo",
+      h1: "Verificador de preparacion para email masivo",
+      buttonLabel: "Comprobar preparacion",
       intro:
         "Comprueba si tu dominio tiene los requisitos basicos para enviar email masivo a Gmail y Yahoo. Revisa SPF, DKIM, DMARC, MX, SPF lookups y checks manuales como unsubscribe y spam rate.",
       previewSummary:
@@ -267,8 +267,8 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/spf-checker": {
       eyebrow: "Herramienta SPF",
-      h1: "SPF Record Checker",
-      buttonLabel: "Check SPF",
+      h1: "Verificador de registro SPF",
+      buttonLabel: "Comprobar SPF",
       intro:
         "Comprueba si tu dominio publica un unico registro SPF valido, revisa el TXT raw y detecta errores comunes.",
       previewSummary: "Ejecuta el checker para inspeccionar SPF y el conteo de DNS lookups.",
@@ -298,8 +298,8 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/dmarc-checker": {
       eyebrow: "Herramienta DMARC",
-      h1: "DMARC Record Checker",
-      buttonLabel: "Check DMARC",
+      h1: "Verificador de registro DMARC",
+      buttonLabel: "Comprobar DMARC",
       intro:
         "Valida si tu dominio publica DMARC, revisa la politica activa y entiende que corregir despues.",
       previewSummary:
@@ -330,8 +330,8 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/mx-record-checker": {
       eyebrow: "Herramienta MX",
-      h1: "MX Record Checker",
-      buttonLabel: "Check MX",
+      h1: "Verificador de registros MX",
+      buttonLabel: "Comprobar MX",
       intro:
         "Inspecciona si tu dominio recibe email correctamente, incluyendo hosts MX, prioridades y casos Null MX.",
       previewSummary:
@@ -362,7 +362,7 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/spf-lookup-counter": {
       eyebrow: "Herramienta SPF lookup",
-      h1: "SPF Lookup Counter",
+      h1: "Contador de lookups SPF",
       buttonLabel: "Contar SPF lookups",
       intro:
         "Estima cuantos DNS lookups activa tu politica SPF y detecta registros cerca o por encima del limite.",
@@ -393,9 +393,9 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
       ],
     },
     "/bulk-email-readiness-checker": {
-      eyebrow: "Readiness DNS para bulk senders",
-      h1: "Bulk Email Readiness Checker",
-      buttonLabel: "Check bulk readiness",
+      eyebrow: "Preparacion DNS para remitentes masivos",
+      h1: "Verificador de preparacion para email masivo",
+      buttonLabel: "Comprobar preparacion",
       intro:
         "Ejecuta un check enfocado antes de una newsletter, campana o automatizacion. Revisa SPF, DKIM, DMARC, MX, SPF lookups y requisitos manuales.",
       previewSummary:
@@ -405,9 +405,9 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
         "Usa primero el score de autenticacion DNS y despues revisa los checks manuales antes de enviar campanas.",
     },
     "/gmail-bulk-sender-requirements": {
-      eyebrow: "Checklist bulk sender de Gmail",
-      h1: "Gmail Bulk Sender Requirements Checker",
-      buttonLabel: "Check Gmail readiness",
+      eyebrow: "Checklist de requisitos de Gmail",
+      h1: "Verificador de requisitos de Gmail para remitentes masivos",
+      buttonLabel: "Comprobar preparacion para Gmail",
       intro:
         "Comprueba las senales DNS que Gmail espera de bulk senders y revisa requisitos manuales como unsubscribe y spam rate fuera de DNS.",
       previewSummary:
@@ -418,8 +418,8 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/dmarc-policy-bulk-email": {
       eyebrow: "Guia de politica DMARC",
-      h1: "DMARC Policy for Bulk Email",
-      buttonLabel: "Check DMARC policy",
+      h1: "Politica DMARC para email masivo",
+      buttonLabel: "Comprobar politica DMARC",
       intro:
         "Revisa la politica DMARC de tu dominio y entiende que significan p=none, quarantine y reject antes de campanas bulk.",
       previewSummary:
@@ -430,8 +430,8 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/guides/mailchimp-gmail-compliance": {
       eyebrow: "Guia de setup Mailchimp",
-      h1: "Mailchimp Gmail Compliance Guide",
-      buttonLabel: "Check Mailchimp setup",
+      h1: "Guia de cumplimiento de Gmail para Mailchimp",
+      buttonLabel: "Comprobar configuracion de Mailchimp",
       intro:
         "Usa esta guia si envias campanas desde Mailchimp y quieres confirmar DNS basico mas los checks manuales de Gmail.",
       previewSummary:
@@ -443,9 +443,9 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
   },
   pt: {
     "/": {
-      eyebrow: "Readiness para bulk senders Gmail/Yahoo",
-      h1: "Bulk Email Readiness Checker",
-      buttonLabel: "Check bulk readiness",
+      eyebrow: "Preparacao para remetentes em massa no Gmail e Yahoo",
+      h1: "Verificador de preparacao para email em massa",
+      buttonLabel: "Verificar preparacao",
       intro:
         "Verifique se seu dominio tem os requisitos basicos para envio em massa para Gmail e Yahoo. Revise SPF, DKIM, DMARC, MX, SPF lookups e checks manuais como unsubscribe e spam rate.",
       previewSummary:
@@ -456,8 +456,8 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/spf-checker": {
       eyebrow: "Ferramenta SPF",
-      h1: "SPF Record Checker",
-      buttonLabel: "Check SPF",
+      h1: "Verificador de registro SPF",
+      buttonLabel: "Verificar SPF",
       intro:
         "Verifique se seu dominio publica um unico registro SPF valido, veja o TXT raw e encontre erros comuns.",
       previewSummary: "Rode o checker para inspecionar SPF e a estimativa de DNS lookups.",
@@ -487,8 +487,8 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/dmarc-checker": {
       eyebrow: "Ferramenta DMARC",
-      h1: "DMARC Record Checker",
-      buttonLabel: "Check DMARC",
+      h1: "Verificador de registro DMARC",
+      buttonLabel: "Verificar DMARC",
       intro:
         "Valide se seu dominio publica DMARC, veja a politica ativa e entenda o proximo ajuste.",
       previewSummary:
@@ -519,8 +519,8 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/mx-record-checker": {
       eyebrow: "Ferramenta MX",
-      h1: "MX Record Checker",
-      buttonLabel: "Check MX",
+      h1: "Verificador de registros MX",
+      buttonLabel: "Verificar MX",
       intro:
         "Inspecione se seu dominio recebe email corretamente, incluindo hosts MX, prioridades e casos Null MX.",
       previewSummary:
@@ -551,7 +551,7 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/spf-lookup-counter": {
       eyebrow: "Ferramenta SPF lookup",
-      h1: "SPF Lookup Counter",
+      h1: "Contador de lookups SPF",
       buttonLabel: "Contar SPF lookups",
       intro:
         "Estime quantos DNS lookups sua politica SPF aciona e identifique registros perto ou acima do limite.",
@@ -582,9 +582,9 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
       ],
     },
     "/bulk-email-readiness-checker": {
-      eyebrow: "Readiness DNS para bulk senders",
-      h1: "Bulk Email Readiness Checker",
-      buttonLabel: "Check bulk readiness",
+      eyebrow: "Preparacao DNS para remetentes em massa",
+      h1: "Verificador de preparacao para email em massa",
+      buttonLabel: "Verificar preparacao",
       intro:
         "Rode um check focado antes de uma newsletter, campanha ou automacao. Revise SPF, DKIM, DMARC, MX, SPF lookups e requisitos manuais.",
       previewSummary:
@@ -594,9 +594,9 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
         "Use primeiro o score de autenticacao DNS e depois revise os checks manuais antes de enviar campanhas.",
     },
     "/gmail-bulk-sender-requirements": {
-      eyebrow: "Checklist bulk sender do Gmail",
-      h1: "Gmail Bulk Sender Requirements Checker",
-      buttonLabel: "Check Gmail readiness",
+      eyebrow: "Checklist de requisitos do Gmail",
+      h1: "Verificador de requisitos do Gmail para remetentes em massa",
+      buttonLabel: "Verificar preparacao para Gmail",
       intro:
         "Confira os sinais DNS que o Gmail espera de bulk senders e revise requisitos manuais como unsubscribe e spam rate fora do DNS.",
       previewSummary:
@@ -607,8 +607,8 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/dmarc-policy-bulk-email": {
       eyebrow: "Guia de politica DMARC",
-      h1: "DMARC Policy for Bulk Email",
-      buttonLabel: "Check DMARC policy",
+      h1: "Politica DMARC para email em massa",
+      buttonLabel: "Verificar politica DMARC",
       intro:
         "Revise a politica DMARC do seu dominio e entenda p=none, quarantine e reject antes de campanhas bulk.",
       previewSummary:
@@ -619,8 +619,8 @@ const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
     },
     "/guides/mailchimp-gmail-compliance": {
       eyebrow: "Guia de setup Mailchimp",
-      h1: "Mailchimp Gmail Compliance Guide",
-      buttonLabel: "Check Mailchimp setup",
+      h1: "Guia de conformidade do Gmail para Mailchimp",
+      buttonLabel: "Verificar configuracao do Mailchimp",
       intro:
         "Use este guia se voce envia campanhas pelo Mailchimp e quer confirmar DNS basico mais os checks manuais do Gmail.",
       previewSummary:
