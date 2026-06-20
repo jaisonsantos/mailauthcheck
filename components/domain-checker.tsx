@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState, type CSSProperties } from "react";
+import { FormEvent, useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -10,7 +10,9 @@ import {
   Copy,
   LoaderCircle,
   MailCheck,
+  Moon,
   ShieldCheck,
+  Sun,
   Wrench,
   XCircle,
 } from "lucide-react";
@@ -26,10 +28,608 @@ import type {
 import { trackEvent } from "@/lib/analytics";
 import { buildLeadCaptureUrl } from "@/lib/lead-capture";
 import type { CheckerPageConfig } from "@/lib/page-config";
-import { buildDeveloperReport, statusLabel, toneFromStatus } from "@/lib/report";
+import { buildDeveloperReport, toneFromStatus } from "@/lib/report";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_MAILAUTHCHECK_API_URL ?? "http://127.0.0.1:8000";
+
+type Locale = "en" | "es" | "pt";
+type Theme = "light" | "dark";
+
+const localeLabels: Record<Locale, string> = {
+  en: "EN",
+  es: "ES",
+  pt: "PT",
+};
+
+const chromeCopy = {
+  en: {
+    language: "Language",
+    themeLight: "Light",
+    themeDark: "Dark",
+    publicDns: "Public DNS checks",
+    noAccount: "No account needed",
+    noInbox: "No inbox guarantee",
+    domain: "Domain",
+    esp: "Email service provider",
+    helper:
+      "Enter a domain like example.com. Choose an ESP if you know which service sends your campaigns.",
+    loading: "Checking public DNS records...",
+    liveChecker: "Live checker",
+    runCheck: "Run a check",
+    ready: "Ready",
+    needsAttention: "Needs attention",
+    notReady: "Not ready",
+    resultCards: "Result cards",
+    manualChecks: "Manual checks",
+    manualTitle: "These items cannot be verified from DNS",
+    manualIntro:
+      "Review these inside your ESP, message headers or provider dashboards before treating a campaign as ready.",
+    bulkChecklist: "Bulk checklist",
+    gmailChecklistTitle: "Gmail bulk sender checklist",
+    yahooChecklistTitle: "Yahoo bulk sender checklist",
+    manualStatus: "manual",
+    nextSteps: "Next steps",
+    nextTitle: "Fix the most important issues first",
+    nextIntro:
+      "The result starts with plain language, then keeps technical details and raw DNS records visible for developers and agencies who need them.",
+    howLabel: "How it works",
+    howTitle: "What you can click on this page",
+    howScanTitle: "Run the checker",
+    howScan:
+      "Type a domain, optionally choose the ESP, and click the main check button. This is the only action that runs DNS checks.",
+    howReportTitle: "Copy a technical report",
+    howReport:
+      "After a scan, copy the result summary and raw records so you can send them to a developer or agency.",
+    howHelpTitle: "Request assisted setup",
+    howHelp:
+      "After a scan, the help CTA opens a lightweight contact flow. There is no login, checkout or dashboard.",
+    helpLabel: "Assisted setup CTA",
+    helpTitle: "Need help fixing this?",
+    helpIntro:
+      "This stays lightweight. It points users toward manual setup help without adding accounts, checkout or a dashboard.",
+    helpButton: "Need help fixing this?",
+    helpUnavailable: "Run a scan to request help",
+    copyReport: "Copy technical report",
+    copyCopied: "Technical report copied",
+    copyFailed: "Copy failed",
+    copyUnavailable: "Run a scan to copy report",
+    helpNoteResult:
+      "This opens a simple external contact form and pre-fills the domain and main issues.",
+    helpNoteEmpty: "Run a scan first to unlock the help request and technical report.",
+    guaranteeNote:
+      "It can help with visible DNS authentication issues, but it does not guarantee inbox placement.",
+    relatedLabel: "Related tools",
+    relatedTitle: "Focused tools for one check at a time",
+    guidesLabel: "Guides",
+    guidesTitle: "Practical setup guides",
+    guidesIntro:
+      "These guides explain the manual parts that public DNS alone cannot prove.",
+    faqLabel: "FAQ",
+    faqTitle: "Clear answers",
+    disclaimer: "Disclaimer:",
+    footer: "A focused utility for SPF, DKIM, DMARC, MX and bulk sender-readiness basics.",
+    noRawRecord: "No raw record to show for this check.",
+  },
+  es: {
+    language: "Idioma",
+    themeLight: "Claro",
+    themeDark: "Oscuro",
+    publicDns: "Checks DNS publicos",
+    noAccount: "Sin cuenta",
+    noInbox: "Sin garantia de inbox",
+    domain: "Dominio",
+    esp: "Proveedor de email",
+    helper:
+      "Escribe un dominio como example.com. Elige un ESP si sabes que servicio envia tus campanas.",
+    loading: "Consultando DNS publicos...",
+    liveChecker: "Checker en vivo",
+    runCheck: "Ejecuta un check",
+    ready: "Listo",
+    needsAttention: "Necesita atencion",
+    notReady: "No listo",
+    resultCards: "Resultados",
+    manualChecks: "Checks manuales",
+    manualTitle: "Estos puntos no se pueden verificar solo con DNS",
+    manualIntro:
+      "Revisalos dentro de tu ESP, cabeceras de mensajes o paneles del proveedor antes de tratar una campana como lista.",
+    bulkChecklist: "Checklist bulk",
+    gmailChecklistTitle: "Checklist bulk sender de Gmail",
+    yahooChecklistTitle: "Checklist bulk sender de Yahoo",
+    manualStatus: "manual",
+    nextSteps: "Proximos pasos",
+    nextTitle: "Corrige primero lo mas importante",
+    nextIntro:
+      "El resultado empieza con lenguaje claro y deja los detalles tecnicos y registros DNS visibles para developers y agencias.",
+    howLabel: "Como funciona",
+    howTitle: "Que puedes clicar en esta pagina",
+    howScanTitle: "Ejecutar el checker",
+    howScan:
+      "Escribe un dominio, opcionalmente elige el ESP y pulsa el boton principal. Esta es la unica accion que ejecuta checks DNS.",
+    howReportTitle: "Copiar reporte tecnico",
+    howReport:
+      "Despues de un scan, copia el resumen y los registros para enviarlos a un developer o agencia.",
+    howHelpTitle: "Pedir ayuda asistida",
+    howHelp:
+      "Despues de un scan, el CTA de ayuda abre un flujo ligero de contacto. No hay login, checkout ni dashboard.",
+    helpLabel: "CTA de ayuda",
+    helpTitle: "Need help fixing this?",
+    helpIntro:
+      "Se mantiene ligero. Apunta a ayuda manual de setup sin cuentas, checkout ni dashboard.",
+    helpButton: "Need help fixing this?",
+    helpUnavailable: "Ejecuta un scan para pedir ayuda",
+    copyReport: "Copiar reporte tecnico",
+    copyCopied: "Reporte tecnico copiado",
+    copyFailed: "No se pudo copiar",
+    copyUnavailable: "Ejecuta un scan para copiar reporte",
+    helpNoteResult:
+      "Esto abre un formulario externo simple y completa el dominio y los problemas principales.",
+    helpNoteEmpty: "Ejecuta un scan primero para activar ayuda y reporte tecnico.",
+    guaranteeNote:
+      "Puede ayudar con problemas visibles de autenticacion DNS, pero no garantiza inbox placement.",
+    relatedLabel: "Herramientas relacionadas",
+    relatedTitle: "Herramientas enfocadas para un check por vez",
+    guidesLabel: "Guias",
+    guidesTitle: "Guias practicas de setup",
+    guidesIntro:
+      "Estas guias explican las partes manuales que DNS publico no puede comprobar.",
+    faqLabel: "FAQ",
+    faqTitle: "Respuestas claras",
+    disclaimer: "Disclaimer:",
+    footer: "Una utilidad enfocada para SPF, DKIM, DMARC, MX y readiness de bulk senders.",
+    noRawRecord: "No hay registro raw para mostrar en este check.",
+  },
+  pt: {
+    language: "Idioma",
+    themeLight: "Claro",
+    themeDark: "Escuro",
+    publicDns: "Checks DNS publicos",
+    noAccount: "Sem conta",
+    noInbox: "Sem garantia de inbox",
+    domain: "Dominio",
+    esp: "Provedor de email",
+    helper:
+      "Digite um dominio como example.com. Escolha um ESP se souber qual servico envia suas campanhas.",
+    loading: "Consultando DNS publicos...",
+    liveChecker: "Checker ao vivo",
+    runCheck: "Rodar check",
+    ready: "Pronto",
+    needsAttention: "Precisa de atencao",
+    notReady: "Nao pronto",
+    resultCards: "Resultados",
+    manualChecks: "Checks manuais",
+    manualTitle: "Estes itens nao podem ser verificados apenas por DNS",
+    manualIntro:
+      "Revise isso no ESP, nos headers da mensagem ou nos paineis do provedor antes de considerar uma campanha pronta.",
+    bulkChecklist: "Checklist bulk",
+    gmailChecklistTitle: "Checklist bulk sender do Gmail",
+    yahooChecklistTitle: "Checklist bulk sender do Yahoo",
+    manualStatus: "manual",
+    nextSteps: "Proximos passos",
+    nextTitle: "Corrija primeiro o que importa",
+    nextIntro:
+      "O resultado comeca em linguagem simples e mantem detalhes tecnicos e registros DNS visiveis para developers e agencias.",
+    howLabel: "Como funciona",
+    howTitle: "Onde clicar nesta pagina",
+    howScanTitle: "Rodar o checker",
+    howScan:
+      "Digite um dominio, opcionalmente escolha o ESP e clique no botao principal. Essa e a unica acao que executa checks DNS.",
+    howReportTitle: "Copiar relatorio tecnico",
+    howReport:
+      "Depois de um scan, copie o resumo e os registros para enviar a um developer ou agencia.",
+    howHelpTitle: "Pedir setup assistido",
+    howHelp:
+      "Depois de um scan, o CTA de ajuda abre um fluxo leve de contato. Nao ha login, checkout ou dashboard.",
+    helpLabel: "CTA de ajuda",
+    helpTitle: "Need help fixing this?",
+    helpIntro:
+      "Isso continua leve. Aponta para ajuda manual de setup sem contas, checkout ou dashboard.",
+    helpButton: "Need help fixing this?",
+    helpUnavailable: "Rode um scan para pedir ajuda",
+    copyReport: "Copiar relatorio tecnico",
+    copyCopied: "Relatorio tecnico copiado",
+    copyFailed: "Falha ao copiar",
+    copyUnavailable: "Rode um scan para copiar relatorio",
+    helpNoteResult:
+      "Isso abre um formulario externo simples e preenche dominio e principais problemas.",
+    helpNoteEmpty: "Rode um scan primeiro para liberar ajuda e relatorio tecnico.",
+    guaranteeNote:
+      "Pode ajudar com problemas visiveis de autenticacao DNS, mas nao garante inbox placement.",
+    relatedLabel: "Ferramentas relacionadas",
+    relatedTitle: "Ferramentas focadas para um check por vez",
+    guidesLabel: "Guias",
+    guidesTitle: "Guias praticos de setup",
+    guidesIntro:
+      "Estes guias explicam as partes manuais que DNS publico nao consegue provar.",
+    faqLabel: "FAQ",
+    faqTitle: "Respostas claras",
+    disclaimer: "Disclaimer:",
+    footer: "Uma utility focada em SPF, DKIM, DMARC, MX e bulk sender readiness.",
+    noRawRecord: "Nao ha registro raw para mostrar neste check.",
+  },
+} satisfies Record<Locale, Record<string, string>>;
+
+const pageCopy: Record<Locale, Record<string, Partial<CheckerPageConfig>>> = {
+  en: {},
+  es: {
+    "/": {
+      eyebrow: "Readiness para bulk senders Gmail/Yahoo",
+      h1: "Bulk Email Readiness Checker",
+      buttonLabel: "Check bulk readiness",
+      intro:
+        "Comprueba si tu dominio tiene los requisitos basicos para enviar email masivo a Gmail y Yahoo. Revisa SPF, DKIM, DMARC, MX, SPF lookups y checks manuales como unsubscribe y spam rate.",
+      previewSummary:
+        "Ejecuta el checker para ver senales DNS automaticas y checks manuales en un solo lugar.",
+      resultsHeading: "Senales DNS automaticas y checks manuales",
+      resultsIntro:
+        "Revisa primero el resultado general y despues inspecciona cards, confianza y registros DNS raw.",
+    },
+    "/spf-checker": {
+      eyebrow: "Herramienta SPF",
+      h1: "SPF Record Checker",
+      buttonLabel: "Check SPF",
+      intro:
+        "Comprueba si tu dominio publica un unico registro SPF valido, revisa el TXT raw y detecta errores comunes.",
+      previewSummary: "Ejecuta el checker para inspeccionar SPF y el conteo de DNS lookups.",
+      resultsHeading: "Resultado SPF enfocado",
+      resultsIntro: "Esta pagina se centra en calidad de SPF y presion de DNS lookups.",
+      faqs: [
+        {
+          question: "Puedo tener varios registros SPF?",
+          answer:
+            "No. Un dominio debe publicar un unico registro SPF TXT. Varios SPF pueden causar fallos de autenticacion.",
+        },
+        {
+          question: "Que significa ~all?",
+          answer:
+            "~all es soft fail. Se usa a menudo mientras el remitente valida su politica SPF final.",
+        },
+        {
+          question: "Que significa -all?",
+          answer:
+            "-all es hard fail. Indica que servidores fuera de la politica SPF deberian fallar SPF.",
+        },
+      ],
+      relatedTools: [
+        { href: "/dmarc-checker", label: "DMARC checker" },
+        { href: "/spf-lookup-counter", label: "SPF lookup counter" },
+      ],
+    },
+    "/dmarc-checker": {
+      eyebrow: "Herramienta DMARC",
+      h1: "DMARC Record Checker",
+      buttonLabel: "Check DMARC",
+      intro:
+        "Valida si tu dominio publica DMARC, revisa la politica activa y entiende que corregir despues.",
+      previewSummary:
+        "Ejecuta el checker para inspeccionar la politica DMARC publicada y el modo de enforcement.",
+      resultsHeading: "Resultado DMARC enfocado",
+      resultsIntro: "Esta pagina se centra en presencia de DMARC, politica y siguiente paso.",
+      faqs: [
+        {
+          question: "Que es p=none?",
+          answer:
+            "p=none significa solo monitoreo. Permite recopilar reportes antes de subir el enforcement.",
+        },
+        {
+          question: "Debo usar quarantine o reject?",
+          answer:
+            "Empieza con p=none, confirma que los remitentes legitimos pasan autenticacion y despues endurece la politica.",
+        },
+        {
+          question: "DMARC requiere SPF o DKIM?",
+          answer:
+            "Si. DMARC depende de SPF o DKIM y de alineacion con el dominio visible en From.",
+        },
+      ],
+      relatedTools: [
+        { href: "/spf-checker", label: "SPF checker" },
+        { href: "/spf-lookup-counter", label: "SPF lookup counter" },
+      ],
+    },
+    "/mx-record-checker": {
+      eyebrow: "Herramienta MX",
+      h1: "MX Record Checker",
+      buttonLabel: "Check MX",
+      intro:
+        "Inspecciona si tu dominio recibe email correctamente, incluyendo hosts MX, prioridades y casos Null MX.",
+      previewSummary:
+        "Ejecuta el checker para revisar registros MX, prioridades y comportamiento Null MX.",
+      resultsHeading: "Resultado MX enfocado",
+      resultsIntro: "Esta pagina se centra en ruteo de email, hosts MX y dominios sin correo entrante.",
+      faqs: [
+        {
+          question: "Que es un registro MX?",
+          answer:
+            "Un registro MX indica a otros sistemas de email donde entregar mensajes entrantes para tu dominio.",
+        },
+        {
+          question: "Necesito MX para enviar email?",
+          answer:
+            "No siempre para enviar, pero la mayoria de dominios de negocio lo necesitan para recibir email.",
+        },
+        {
+          question: "Por que faltan registros MX?",
+          answer:
+            "El dominio puede no estar configurado para recibir email o el setup del proveedor puede estar incompleto.",
+        },
+      ],
+      relatedTools: [
+        { href: "/spf-checker", label: "SPF checker" },
+        { href: "/dmarc-checker", label: "DMARC checker" },
+      ],
+    },
+    "/spf-lookup-counter": {
+      eyebrow: "Herramienta SPF lookup",
+      h1: "SPF Lookup Counter",
+      buttonLabel: "Contar SPF lookups",
+      intro:
+        "Estima cuantos DNS lookups activa tu politica SPF y detecta registros cerca o por encima del limite.",
+      previewSummary:
+        "Ejecuta el contador para estimar SPF DNS lookups antes de llegar al limite.",
+      resultsHeading: "Resultado enfocado de SPF lookups",
+      resultsIntro: "Esta pagina se centra en politicas SPF pesadas y el limite de 10 lookups.",
+      faqs: [
+        {
+          question: "Por que existe el limite de 10 lookups?",
+          answer:
+            "SPF tiene un limite duro de 10 DNS lookups para evitar recursion excesiva y abuso.",
+        },
+        {
+          question: "Que cuenta como DNS lookup SPF?",
+          answer:
+            "include, a, mx, ptr, exists y redirect pueden consumir lookups durante la evaluacion SPF.",
+        },
+        {
+          question: "Como reduzco los SPF lookups?",
+          answer:
+            "Elimina proveedores que ya no envian, evita includes duplicados y consolida servicios cuando sea posible.",
+        },
+      ],
+      relatedTools: [
+        { href: "/spf-checker", label: "SPF checker" },
+        { href: "/dmarc-checker", label: "DMARC checker" },
+      ],
+    },
+    "/bulk-email-readiness-checker": {
+      eyebrow: "Readiness DNS para bulk senders",
+      h1: "Bulk Email Readiness Checker",
+      buttonLabel: "Check bulk readiness",
+      intro:
+        "Ejecuta un check enfocado antes de una newsletter, campana o automatizacion. Revisa SPF, DKIM, DMARC, MX, SPF lookups y requisitos manuales.",
+      previewSummary:
+        "Ejecuta el checker para separar checks DNS automaticos de requisitos manuales de bulk sender.",
+      resultsHeading: "Senales de readiness para bulk senders",
+      resultsIntro:
+        "Usa primero el score de autenticacion DNS y despues revisa los checks manuales antes de enviar campanas.",
+    },
+    "/gmail-bulk-sender-requirements": {
+      eyebrow: "Checklist bulk sender de Gmail",
+      h1: "Gmail Bulk Sender Requirements Checker",
+      buttonLabel: "Check Gmail readiness",
+      intro:
+        "Comprueba las senales DNS que Gmail espera de bulk senders y revisa requisitos manuales como unsubscribe y spam rate fuera de DNS.",
+      previewSummary:
+        "Ejecuta el checker para ver que requisitos de Gmail son automaticos y cuales necesitan confirmacion manual.",
+      resultsHeading: "Checklist de readiness para Gmail",
+      resultsIntro:
+        "SPF, DKIM y DMARC pueden revisarse por DNS. Spam rate y unsubscribe necesitan revision del proveedor o del mensaje.",
+    },
+    "/dmarc-policy-bulk-email": {
+      eyebrow: "Guia de politica DMARC",
+      h1: "DMARC Policy for Bulk Email",
+      buttonLabel: "Check DMARC policy",
+      intro:
+        "Revisa la politica DMARC de tu dominio y entiende que significan p=none, quarantine y reject antes de campanas bulk.",
+      previewSummary:
+        "Ejecuta el checker para ver la politica actual y decidir si monitoreo o enforcement es el siguiente paso correcto.",
+      resultsHeading: "Estado de politica DMARC y siguiente paso",
+      resultsIntro:
+        "Esta pagina interpreta DMARC para bulk sending. SPF y DKIM siguen importando, pero aqui la pregunta principal es la politica DMARC.",
+    },
+    "/guides/mailchimp-gmail-compliance": {
+      eyebrow: "Guia de setup Mailchimp",
+      h1: "Mailchimp Gmail Compliance Guide",
+      buttonLabel: "Check Mailchimp setup",
+      intro:
+        "Usa esta guia si envias campanas desde Mailchimp y quieres confirmar DNS basico mas los checks manuales de Gmail.",
+      previewSummary:
+        "Ejecuta el checker con Mailchimp seleccionado para revisar DKIM, DMARC, SPF, MX y checks manuales.",
+      resultsHeading: "Readiness del dominio para Mailchimp",
+      resultsIntro:
+        "Esta pagina reutiliza el checker principal, pero encuadra el resultado alrededor de Mailchimp y requisitos de Gmail.",
+    },
+  },
+  pt: {
+    "/": {
+      eyebrow: "Readiness para bulk senders Gmail/Yahoo",
+      h1: "Bulk Email Readiness Checker",
+      buttonLabel: "Check bulk readiness",
+      intro:
+        "Verifique se seu dominio tem os requisitos basicos para envio em massa para Gmail e Yahoo. Revise SPF, DKIM, DMARC, MX, SPF lookups e checks manuais como unsubscribe e spam rate.",
+      previewSummary:
+        "Rode o checker para ver sinais DNS automaticos e checks manuais em um so lugar.",
+      resultsHeading: "Sinais DNS automaticos e checks manuais",
+      resultsIntro:
+        "Revise primeiro o resultado geral e depois inspecione cards, confianca e registros DNS raw.",
+    },
+    "/spf-checker": {
+      eyebrow: "Ferramenta SPF",
+      h1: "SPF Record Checker",
+      buttonLabel: "Check SPF",
+      intro:
+        "Verifique se seu dominio publica um unico registro SPF valido, veja o TXT raw e encontre erros comuns.",
+      previewSummary: "Rode o checker para inspecionar SPF e a estimativa de DNS lookups.",
+      resultsHeading: "Resultado SPF focado",
+      resultsIntro: "Esta pagina fica focada na qualidade do SPF e no limite de DNS lookups.",
+      faqs: [
+        {
+          question: "Posso ter varios registros SPF?",
+          answer:
+            "Nao. Um dominio deve publicar um unico registro SPF TXT. Varios SPF podem causar falhas de autenticacao.",
+        },
+        {
+          question: "O que significa ~all?",
+          answer:
+            "~all e soft fail. E comum enquanto o remetente ainda valida a politica SPF final.",
+        },
+        {
+          question: "O que significa -all?",
+          answer:
+            "-all e hard fail. Indica que emails de servidores fora da politica SPF devem falhar SPF.",
+        },
+      ],
+      relatedTools: [
+        { href: "/dmarc-checker", label: "DMARC checker" },
+        { href: "/spf-lookup-counter", label: "SPF lookup counter" },
+      ],
+    },
+    "/dmarc-checker": {
+      eyebrow: "Ferramenta DMARC",
+      h1: "DMARC Record Checker",
+      buttonLabel: "Check DMARC",
+      intro:
+        "Valide se seu dominio publica DMARC, veja a politica ativa e entenda o proximo ajuste.",
+      previewSummary:
+        "Rode o checker para inspecionar a politica DMARC publicada e o modo de enforcement.",
+      resultsHeading: "Resultado DMARC focado",
+      resultsIntro: "Esta pagina fica focada em presenca de DMARC, politica e proximo passo.",
+      faqs: [
+        {
+          question: "O que e p=none?",
+          answer:
+            "p=none significa apenas monitoramento. Permite coletar relatorios antes de aumentar o enforcement.",
+        },
+        {
+          question: "Devo usar quarantine ou reject?",
+          answer:
+            "Comece com p=none, confirme que remetentes legitimos passam autenticacao e depois endureca a politica.",
+        },
+        {
+          question: "DMARC exige SPF ou DKIM?",
+          answer:
+            "Sim. DMARC depende de SPF ou DKIM e de alinhamento com o dominio visivel no From.",
+        },
+      ],
+      relatedTools: [
+        { href: "/spf-checker", label: "SPF checker" },
+        { href: "/spf-lookup-counter", label: "SPF lookup counter" },
+      ],
+    },
+    "/mx-record-checker": {
+      eyebrow: "Ferramenta MX",
+      h1: "MX Record Checker",
+      buttonLabel: "Check MX",
+      intro:
+        "Inspecione se seu dominio recebe email corretamente, incluindo hosts MX, prioridades e casos Null MX.",
+      previewSummary:
+        "Rode o checker para revisar registros MX, prioridades e comportamento Null MX.",
+      resultsHeading: "Resultado MX focado",
+      resultsIntro: "Esta pagina fica focada em roteamento de email, hosts MX e dominios sem email de entrada.",
+      faqs: [
+        {
+          question: "O que e um registro MX?",
+          answer:
+            "Um registro MX informa a outros sistemas de email onde entregar mensagens recebidas para seu dominio.",
+        },
+        {
+          question: "Preciso de MX para enviar email?",
+          answer:
+            "Nem sempre para enviar, mas a maioria dos dominios de negocio precisa de MX para receber email.",
+        },
+        {
+          question: "Por que faltam registros MX?",
+          answer:
+            "O dominio pode nao estar configurado para receber email ou o setup do provedor pode estar incompleto.",
+        },
+      ],
+      relatedTools: [
+        { href: "/spf-checker", label: "SPF checker" },
+        { href: "/dmarc-checker", label: "DMARC checker" },
+      ],
+    },
+    "/spf-lookup-counter": {
+      eyebrow: "Ferramenta SPF lookup",
+      h1: "SPF Lookup Counter",
+      buttonLabel: "Contar SPF lookups",
+      intro:
+        "Estime quantos DNS lookups sua politica SPF aciona e identifique registros perto ou acima do limite.",
+      previewSummary:
+        "Rode o contador para estimar SPF DNS lookups antes de atingir o limite.",
+      resultsHeading: "Resultado focado de SPF lookups",
+      resultsIntro: "Esta pagina fica focada em politicas SPF pesadas e no limite de 10 lookups.",
+      faqs: [
+        {
+          question: "Por que existe o limite de 10 lookups?",
+          answer:
+            "SPF tem um limite rigido de 10 DNS lookups para evitar recursao excessiva e abuso.",
+        },
+        {
+          question: "O que conta como DNS lookup SPF?",
+          answer:
+            "include, a, mx, ptr, exists e redirect podem consumir lookups durante a avaliacao SPF.",
+        },
+        {
+          question: "Como reduzo os SPF lookups?",
+          answer:
+            "Remova provedores que nao enviam mais, evite includes duplicados e consolide servicos quando possivel.",
+        },
+      ],
+      relatedTools: [
+        { href: "/spf-checker", label: "SPF checker" },
+        { href: "/dmarc-checker", label: "DMARC checker" },
+      ],
+    },
+    "/bulk-email-readiness-checker": {
+      eyebrow: "Readiness DNS para bulk senders",
+      h1: "Bulk Email Readiness Checker",
+      buttonLabel: "Check bulk readiness",
+      intro:
+        "Rode um check focado antes de uma newsletter, campanha ou automacao. Revise SPF, DKIM, DMARC, MX, SPF lookups e requisitos manuais.",
+      previewSummary:
+        "Rode o checker para separar checks DNS automaticos de requisitos manuais de bulk sender.",
+      resultsHeading: "Sinais de readiness para bulk senders",
+      resultsIntro:
+        "Use primeiro o score de autenticacao DNS e depois revise os checks manuais antes de enviar campanhas.",
+    },
+    "/gmail-bulk-sender-requirements": {
+      eyebrow: "Checklist bulk sender do Gmail",
+      h1: "Gmail Bulk Sender Requirements Checker",
+      buttonLabel: "Check Gmail readiness",
+      intro:
+        "Confira os sinais DNS que o Gmail espera de bulk senders e revise requisitos manuais como unsubscribe e spam rate fora do DNS.",
+      previewSummary:
+        "Rode o checker para ver quais requisitos do Gmail sao automaticos e quais precisam de confirmacao manual.",
+      resultsHeading: "Checklist de readiness para Gmail",
+      resultsIntro:
+        "SPF, DKIM e DMARC podem ser revisados via DNS. Spam rate e unsubscribe precisam de revisao no provedor ou na mensagem.",
+    },
+    "/dmarc-policy-bulk-email": {
+      eyebrow: "Guia de politica DMARC",
+      h1: "DMARC Policy for Bulk Email",
+      buttonLabel: "Check DMARC policy",
+      intro:
+        "Revise a politica DMARC do seu dominio e entenda p=none, quarantine e reject antes de campanhas bulk.",
+      previewSummary:
+        "Rode o checker para ver a politica atual e decidir se monitoramento ou enforcement e o proximo passo correto.",
+      resultsHeading: "Estado da politica DMARC e proximo passo",
+      resultsIntro:
+        "Esta pagina interpreta DMARC para bulk sending. SPF e DKIM ainda importam, mas aqui a pergunta principal e a politica DMARC.",
+    },
+    "/guides/mailchimp-gmail-compliance": {
+      eyebrow: "Guia de setup Mailchimp",
+      h1: "Mailchimp Gmail Compliance Guide",
+      buttonLabel: "Check Mailchimp setup",
+      intro:
+        "Use este guia se voce envia campanhas pelo Mailchimp e quer confirmar DNS basico mais os checks manuais do Gmail.",
+      previewSummary:
+        "Rode o checker com Mailchimp selecionado para revisar DKIM, DMARC, SPF, MX e checks manuais.",
+      resultsHeading: "Readiness do dominio para Mailchimp",
+      resultsIntro:
+        "Esta pagina reutiliza o checker principal, mas enquadra o resultado em Mailchimp e requisitos do Gmail.",
+    },
+  },
+};
 
 const espProviders = [
   { id: "", name: "I do not know / Other" },
@@ -55,14 +655,37 @@ function StatusIcon({ tone }: { tone: "ok" | "warn" | "error" }) {
   return <AlertTriangle aria-hidden="true" />;
 }
 
-function ScoreFlags({ result }: { result: AggregateResult }) {
+function localizedStatusLabel(status: AggregateResult["status"], copy: typeof chromeCopy.en) {
+  if (status === "ready") {
+    return copy.ready;
+  }
+
+  if (status === "not_ready") {
+    return copy.notReady;
+  }
+
+  return copy.needsAttention;
+}
+
+function ScoreFlags({ result, locale }: { result: AggregateResult; locale: Locale }) {
   const topFlags = result.checks
     .filter((check) => check.status !== "ok")
     .slice(0, 2)
     .map((check) => `${check.checkName}: ${check.summary}`);
 
   if (topFlags.length === 0) {
-    topFlags.push("Core DNS checks look healthy", "Ready for the next review step");
+    topFlags.push(
+      locale === "es"
+        ? "Checks DNS principales saludables"
+        : locale === "pt"
+          ? "Checks DNS principais saudaveis"
+          : "Core DNS checks look healthy",
+      locale === "es"
+        ? "Listo para la siguiente revision"
+        : locale === "pt"
+          ? "Pronto para a proxima revisao"
+          : "Ready for the next review step",
+    );
   }
 
   return (
@@ -77,7 +700,13 @@ function ScoreFlags({ result }: { result: AggregateResult }) {
   );
 }
 
-function ManualChecksPanel({ checks }: { checks: ManualCheckResult[] }) {
+function ManualChecksPanel({
+  checks,
+  copy,
+}: {
+  checks: ManualCheckResult[];
+  copy: typeof chromeCopy.en;
+}) {
   if (checks.length === 0) {
     return null;
   }
@@ -86,12 +715,9 @@ function ManualChecksPanel({ checks }: { checks: ManualCheckResult[] }) {
     <section className="manual-band">
       <div className="shell">
         <div className="section-heading">
-          <p className="eyebrow">Manual checks</p>
-          <h2>These items cannot be verified from DNS</h2>
-          <p>
-            Review these inside your ESP, message headers or provider dashboards before
-            treating a campaign as ready.
-          </p>
+          <p className="eyebrow">{copy.manualChecks}</p>
+          <h2>{copy.manualTitle}</h2>
+          <p>{copy.manualIntro}</p>
         </div>
         <div className="manual-grid">
           {checks.map((check) => (
@@ -116,9 +742,13 @@ function ManualChecksPanel({ checks }: { checks: ManualCheckResult[] }) {
 function BulkChecklistPanel({
   title,
   items,
+  label,
+  manualStatus,
 }: {
   title: string;
   items: BulkComplianceItem[];
+  label: string;
+  manualStatus: string;
 }) {
   if (items.length === 0) {
     return null;
@@ -128,14 +758,14 @@ function BulkChecklistPanel({
     <section className="checklist-band">
       <div className="shell">
         <div className="section-heading">
-          <p className="eyebrow">Bulk checklist</p>
+          <p className="eyebrow">{label}</p>
           <h2>{title}</h2>
         </div>
         <div className="checklist-list">
           {items.map((item) => (
             <article key={`${item.provider}-${item.item}`}>
               <span className={`checklist-status ${toneFromStatus(item.status)}`}>
-                {item.status === "manual_check" ? "manual" : item.status.replace("_", " ")}
+                {item.status === "manual_check" ? manualStatus : item.status.replace("_", " ")}
               </span>
               <div>
                 <h3>{item.item}</h3>
@@ -151,6 +781,8 @@ function BulkChecklistPanel({
 }
 
 export function DomainChecker({ config }: { config: CheckerPageConfig }) {
+  const [locale, setLocale] = useState<Locale>("en");
+  const [theme, setTheme] = useState<Theme>("light");
   const [domain, setDomain] = useState("");
   const [espProvider, setEspProvider] = useState(
     config.pathname === "/guides/mailchimp-gmail-compliance" ? "mailchimp" : "",
@@ -158,16 +790,44 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   const [result, setResult] = useState<AggregateResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [copyLabel, setCopyLabel] = useState("Copy technical report");
+  const [copyLabel, setCopyLabel] = useState(chromeCopy.en.copyReport);
+
+  const copy = chromeCopy[locale];
+  const localizedConfig = {
+    ...config,
+    ...(pageCopy[locale][config.pathname] ?? {}),
+  };
+
+  useEffect(() => {
+    const savedLocale = window.localStorage.getItem("mailauthcheck.locale");
+    if (savedLocale === "en" || savedLocale === "es" || savedLocale === "pt") {
+      setLocale(savedLocale);
+    }
+
+    const savedTheme = window.localStorage.getItem("mailauthcheck.theme");
+    if (savedTheme === "light" || savedTheme === "dark") {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("mailauthcheck.theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    window.localStorage.setItem("mailauthcheck.locale", locale);
+    setCopyLabel(chromeCopy[locale].copyReport);
+  }, [locale]);
 
   const scoreTone = useMemo(() => {
     if (!result) {
-      return config.placeholderResult.score;
+      return localizedConfig.placeholderResult.score;
     }
     return Math.max(0, Math.min(100, result.score));
-  }, [config.placeholderResult.score, result]);
+  }, [localizedConfig.placeholderResult.score, result]);
 
-  const displayResult = result ?? config.placeholderResult;
+  const displayResult = result ?? localizedConfig.placeholderResult;
   const displayedChecks = displayResult.automatedChecks ?? displayResult.checks;
   const manualChecks = displayResult.manualChecks ?? [];
   const gmailChecklist = displayResult.gmailBulkChecklist ?? [];
@@ -285,8 +945,8 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       }
 
       await navigator.clipboard.writeText(report);
-      setCopyLabel("Technical report copied");
-      window.setTimeout(() => setCopyLabel("Copy technical report"), 1800);
+      setCopyLabel(copy.copyCopied);
+      window.setTimeout(() => setCopyLabel(copy.copyReport), 1800);
       trackEvent("cta_clicked", {
         tool: config.pathname,
         cta: "send_to_dev",
@@ -301,8 +961,8 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
         status: result.status,
       });
     } catch {
-      setCopyLabel("Copy failed");
-      window.setTimeout(() => setCopyLabel("Copy technical report"), 1800);
+      setCopyLabel(copy.copyFailed);
+      window.setTimeout(() => setCopyLabel(copy.copyReport), 1800);
       trackEvent("cta_clicked", {
         tool: config.pathname,
         cta: "send_to_dev",
@@ -350,31 +1010,57 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       <section className="hero">
         <div className="shell hero-grid">
           <div className="hero-copy">
-            <Link className="brand" href="/" aria-label="MailAuthCheck home">
-              <MailCheck aria-hidden="true" />
-              <span>MailAuthCheck</span>
-            </Link>
-            <p className="eyebrow">{config.eyebrow}</p>
-            <h1>{config.h1}</h1>
-            <p className="hero-text">{config.intro}</p>
+            <div className="topbar">
+              <Link className="brand" href="/" aria-label="MailAuthCheck home">
+                <MailCheck aria-hidden="true" />
+                <span>MailAuthCheck</span>
+              </Link>
+              <div className="site-controls" aria-label="Site preferences">
+                <div className="segmented" aria-label={copy.language}>
+                  {(Object.keys(localeLabels) as Locale[]).map((item) => (
+                    <button
+                      type="button"
+                      key={item}
+                      className={item === locale ? "active" : undefined}
+                      aria-pressed={item === locale}
+                      onClick={() => setLocale(item)}
+                    >
+                      {localeLabels[item]}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="theme-toggle"
+                  aria-label={theme === "dark" ? copy.themeLight : copy.themeDark}
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                >
+                  {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+                  <span>{theme === "dark" ? copy.themeLight : copy.themeDark}</span>
+                </button>
+              </div>
+            </div>
+            <p className="eyebrow">{localizedConfig.eyebrow}</p>
+            <h1>{localizedConfig.h1}</h1>
+            <p className="hero-text">{localizedConfig.intro}</p>
 
             <div className="trust-strip" aria-label="Product guardrails">
               <span>
                 <ShieldCheck aria-hidden="true" />
-                Public DNS checks
+                {copy.publicDns}
               </span>
               <span>
                 <CheckCircle2 aria-hidden="true" />
-                No account needed
+                {copy.noAccount}
               </span>
               <span>
                 <AlertTriangle aria-hidden="true" />
-                No inbox guarantee
+                {copy.noInbox}
               </span>
             </div>
 
             <form className="domain-form" aria-label="Domain checker" onSubmit={handleSubmit}>
-              <label htmlFor="domain">Domain</label>
+              <label htmlFor="domain">{copy.domain}</label>
               <div className="input-row">
                 <input
                   id="domain"
@@ -386,7 +1072,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                 <select
                   id="espProvider"
                   name="espProvider"
-                  aria-label="Email service provider"
+                  aria-label={copy.esp}
                   value={espProvider}
                   onChange={(event) => setEspProvider(event.target.value)}
                 >
@@ -398,21 +1084,20 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                 </select>
                 <button type="submit" disabled={isLoading}>
                   {isLoading ? <LoaderCircle aria-hidden="true" className="spin" /> : null}
-                  <span>{isLoading ? "Checking public DNS records..." : config.buttonLabel}</span>
+                  <span>{isLoading ? copy.loading : localizedConfig.buttonLabel}</span>
                   {!isLoading ? <ArrowRight aria-hidden="true" /> : null}
                 </button>
               </div>
               <p>
-                {errorMessage ??
-                  "Enter a domain like example.com. Choose an ESP if you know which service sends your campaigns."}
+                {errorMessage ?? copy.helper}
               </p>
             </form>
           </div>
 
           <aside className="score-panel" aria-label="Scan result">
             <div className="score-topline">
-              <span>{result ? result.domain : "Live checker"}</span>
-              <strong>{result ? statusLabel(result.status) : "Run a check"}</strong>
+              <span>{result ? result.domain : copy.liveChecker}</span>
+              <strong>{result ? localizedStatusLabel(result.status, copy) : copy.runCheck}</strong>
             </div>
             <div
               className="score-ring"
@@ -429,9 +1114,9 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
             <p>
               {result
                 ? result.summary
-                : config.previewSummary}
+                : localizedConfig.previewSummary}
             </p>
-            <ScoreFlags result={displayResult} />
+            <ScoreFlags result={displayResult} locale={locale} />
           </aside>
         </div>
       </section>
@@ -439,9 +1124,9 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       <section className="results-band">
         <div className="shell">
           <div className="section-heading">
-            <p className="eyebrow">Result cards</p>
-            <h2>{config.resultsHeading}</h2>
-            <p>{config.resultsIntro}</p>
+            <p className="eyebrow">{copy.resultCards}</p>
+            <h2>{localizedConfig.resultsHeading}</h2>
+            <p>{localizedConfig.resultsIntro}</p>
           </div>
 
           <div className="cards-grid">
@@ -460,7 +1145,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                   {check.rawRecords.length > 0 ? (
                     <code>{check.rawRecords.join("\n")}</code>
                   ) : (
-                    <code>No raw record to show for this check.</code>
+                    <code>{copy.noRawRecord}</code>
                   )}
                 </article>
               );
@@ -469,21 +1154,28 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
         </div>
       </section>
 
-      <ManualChecksPanel checks={manualChecks} />
+      <ManualChecksPanel checks={manualChecks} copy={copy} />
 
-      <BulkChecklistPanel title="Gmail bulk sender checklist" items={gmailChecklist} />
+      <BulkChecklistPanel
+        title={copy.gmailChecklistTitle}
+        items={gmailChecklist}
+        label={copy.bulkChecklist}
+        manualStatus={copy.manualStatus}
+      />
 
-      <BulkChecklistPanel title="Yahoo bulk sender checklist" items={yahooChecklist} />
+      <BulkChecklistPanel
+        title={copy.yahooChecklistTitle}
+        items={yahooChecklist}
+        label={copy.bulkChecklist}
+        manualStatus={copy.manualStatus}
+      />
 
       <section className="next-steps">
         <div className="shell steps-grid">
           <div>
-            <p className="eyebrow">Next steps</p>
-            <h2>Fix the most important issues first</h2>
-            <p>
-              The result starts with plain language, then keeps technical details and raw
-              DNS records visible for developers and agencies who need them.
-            </p>
+            <p className="eyebrow">{copy.nextSteps}</p>
+            <h2>{copy.nextTitle}</h2>
+            <p>{copy.nextIntro}</p>
           </div>
           <ol>
             {displayResult.nextSteps.map((step) => (
@@ -493,15 +1185,38 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
         </div>
       </section>
 
+      <section className="how-band">
+        <div className="shell">
+          <div className="section-heading">
+            <p className="eyebrow">{copy.howLabel}</p>
+            <h2>{copy.howTitle}</h2>
+          </div>
+          <div className="how-grid">
+            <article>
+              <CheckCircle2 aria-hidden="true" />
+              <h3>{copy.howScanTitle}</h3>
+              <p>{copy.howScan}</p>
+            </article>
+            <article>
+              <Copy aria-hidden="true" />
+              <h3>{copy.howReportTitle}</h3>
+              <p>{copy.howReport}</p>
+            </article>
+            <article>
+              <Wrench aria-hidden="true" />
+              <h3>{copy.howHelpTitle}</h3>
+              <p>{copy.howHelp}</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section className="help-band">
         <div className="shell help-grid">
           <div>
-            <p className="eyebrow">Assisted setup CTA</p>
-            <h2>Need help fixing this?</h2>
-            <p>
-              The MVP keeps this lightweight. It points users toward manual setup help
-              without adding accounts, checkout or a dashboard.
-            </p>
+            <p className="eyebrow">{copy.helpLabel}</p>
+            <h2>{copy.helpTitle}</h2>
+            <p>{copy.helpIntro}</p>
           </div>
           <div className="cta-actions">
             {result && leadCaptureUrl ? (
@@ -512,12 +1227,12 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                 onClick={handleHelpClick}
               >
                 <Wrench aria-hidden="true" />
-                Need help fixing this?
+                {copy.helpButton}
               </a>
             ) : (
-              <button type="button" disabled>
+              <button className="inactive-action" type="button" disabled>
                 <Wrench aria-hidden="true" />
-                Need help fixing this?
+                {copy.helpUnavailable}
               </button>
             )}
             <button
@@ -527,25 +1242,21 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
               disabled={!result}
             >
               <Copy aria-hidden="true" />
-              {result ? copyLabel : "Run a scan to copy report"}
+              {result ? copyLabel : copy.copyUnavailable}
             </button>
           </div>
           <p className="cta-note">
-            {result
-              ? "This opens a simple external contact form and pre-fills the domain and main issues."
-              : "Run a scan first to pre-fill the domain and main issues in the help request."}
+            {result ? copy.helpNoteResult : copy.helpNoteEmpty}
           </p>
-          <p className="cta-note">
-            It can help with visible DNS authentication issues, but it does not guarantee inbox placement.
-          </p>
+          <p className="cta-note">{copy.guaranteeNote}</p>
         </div>
       </section>
 
       <section className="tools-band">
         <div className="shell">
           <div className="section-heading">
-            <p className="eyebrow">Related tools</p>
-            <h2>Use the focused pages when you need one check at a time</h2>
+            <p className="eyebrow">{copy.relatedLabel}</p>
+            <h2>{copy.relatedTitle}</h2>
           </div>
           <div className="link-grid">
             {config.relatedTools.map((tool) => (
@@ -562,12 +1273,9 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
         <section className="guides-band">
           <div className="shell">
             <div className="section-heading">
-              <p className="eyebrow">Guides</p>
-              <h2>Provider-specific setup guides are the next content layer</h2>
-              <p>
-                The first launch stays focused on the checker. These guide topics are the
-                next practical expansion after validation.
-              </p>
+              <p className="eyebrow">{copy.guidesLabel}</p>
+              <h2>{copy.guidesTitle}</h2>
+              <p>{copy.guidesIntro}</p>
             </div>
             <div className="guides-grid">
               {config.guidePreviews.map((guide) => (
@@ -584,8 +1292,8 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       <section className="faq-band">
         <div className="shell">
           <div className="section-heading">
-            <p className="eyebrow">FAQ</p>
-            <h2>Clear answers for non-technical users</h2>
+            <p className="eyebrow">{copy.faqLabel}</p>
+            <h2>{copy.faqTitle}</h2>
           </div>
           <div className="faq-list">
             {config.faqs.map((faq) => (
@@ -599,7 +1307,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
             ))}
           </div>
           <p className="disclaimer">
-            Disclaimer: {displayResult.disclaimer}
+            {copy.disclaimer} {displayResult.disclaimer}
           </p>
         </div>
       </section>
@@ -611,9 +1319,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
               <MailCheck aria-hidden="true" />
               <span>MailAuthCheck</span>
             </Link>
-            <p>
-              A focused utility for SPF, DKIM, DMARC, MX and bulk sender-readiness basics.
-            </p>
+            <p>{copy.footer}</p>
           </div>
           <nav className="footer-links" aria-label="Footer">
             <Link href="/">Home</Link>
