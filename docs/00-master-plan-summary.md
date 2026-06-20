@@ -4,7 +4,7 @@
 
 MailAuthCheck should start as a free utility site, not as a SaaS product.
 
-The first goal is to publish a useful, indexable tool that lets users check whether a domain is minimally ready to send email correctly.
+The first goal is to publish a useful, indexable tool that lets users check whether a domain is ready for bulk email sending to Gmail and Yahoo.
 
 The product should validate demand through:
 
@@ -33,21 +33,18 @@ Reason:
 
 MailAuthCheck gives users a simple answer to:
 
-> Is my domain ready to send email?
+> Is my domain ready for bulk email sending to Gmail and Yahoo?
 
-It checks public DNS records and explains what is missing, broken, or risky.
+It checks public DNS records, highlights ESP-specific authentication signals where possible, and separates manual bulk-sender requirements from automated DNS checks.
 
 ## Target audience
 
 Primary audiences:
 
-- small business owners;
-- freelancers;
-- agencies;
 - e-commerce operators;
-- small SaaS founders;
-- developers configuring email domains;
-- marketing teams using providers like Google Workspace, Microsoft 365, Mailchimp, Brevo, or SendGrid.
+- marketing teams using providers like Mailchimp, Brevo, Klaviyo, SendGrid, Resend, Mailgun, Amazon SES or HubSpot;
+- agencies and freelancers configuring client sending domains;
+- developers and founders who need raw DNS details.
 
 ## Real MVP
 
@@ -55,9 +52,10 @@ The real MVP is:
 
 - one homepage with a domain scanner;
 - four initial SEO/tool pages;
-- SPF, DMARC, MX and SPF lookup count checks;
-- basic Gmail/Yahoo readiness indication;
-- simple score;
+- SPF, DKIM selector signals, DMARC, MX and SPF lookup count checks;
+- Gmail/Yahoo bulk sender readiness indication;
+- manual checklist items for one-click unsubscribe and spam-rate review;
+- DNS authentication score;
 - clear next steps;
 - lightweight lead capture;
 - CTA for setup assistance.
@@ -95,7 +93,7 @@ Initial monetization should be lightweight:
 
 First money signal:
 
-> A user asks for help fixing SPF/DMARC/MX after running a scan.
+> A user asks for help configuring SPF/DKIM/DMARC for a campaign or ESP after running a scan.
 
 ## Main cuts
 
@@ -116,4 +114,8 @@ Do not build in the MVP:
 - MTA-STS;
 - TLS-RPT;
 - email header analyzer;
+- ESP API integrations;
+- email list verification;
+- email content scanning;
+- sending real test emails;
 - AI-based diagnosis in the technical core.

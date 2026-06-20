@@ -115,7 +115,11 @@ Cache key examples:
 
 - normalized domain;
 - endpoint type;
-- optional selector for future DKIM checks.
+- mode, such as `bulk_sender`;
+- optional ESP provider;
+- optional selector for DKIM checks.
+
+If cache TTL is revisited during the bulk refactor, prefer one documented value. Current implementation uses 15 minutes; a future adjustment to 10 minutes is acceptable only if the decision log is updated.
 
 ## Rate limiting
 
@@ -169,7 +173,7 @@ Use an external hosted form URL for MVP setup requests.
 Current MVP implementation target:
 
 - configure `NEXT_PUBLIC_LEAD_CAPTURE_URL`;
-- prefill domain, status and main issues in the outbound link when possible;
+- prefill domain, selected ESP, status and main issues in the outbound link when possible;
 - open the form in a new tab;
 - keep privacy/disclaimer copy near the CTA;
 - do not store leads inside the application.
@@ -209,19 +213,22 @@ mailauthcheck/
 
 ~~~text
 User enters domain
+→ user optionally selects ESP provider
 → frontend validates basic domain format
 → frontend calls POST /api/check-domain
 → backend normalizes domain
 → backend runs DNS checks:
    - TXT at root domain for SPF
+   - TXT at selector._domainkey.domain for DKIM when selector/ESP is available
    - TXT at _dmarc.domain for DMARC
    - MX at root domain
    - SPF DNS lookup count
+→ backend generates manual checklist items that cannot be verified from DNS
 → backend builds standard check results
-→ backend calculates score
+→ backend calculates DNS Authentication Score
 → backend generates next steps
 → backend returns JSON
-→ frontend renders score, cards, details, next steps, CTA
+→ frontend renders score, automated checks, manual checks, details, next steps, CTA
 ~~~
 
 ## DNS error handling
@@ -247,6 +254,8 @@ The domain input should:
 - trim whitespace;
 - support common subdomains if intentionally entered;
 - avoid scanning internal/private hostnames.
+- avoid URL fetching and any SSRF-prone behavior.
+- do not call ESP APIs in the MVP.
 
 User-facing validation message:
 

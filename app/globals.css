@@ -147,11 +147,12 @@ h3 {
 
 .input-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.48fr) auto;
   gap: 10px;
 }
 
-.input-row input {
+.input-row input,
+.input-row select {
   width: 100%;
   min-height: 58px;
   padding: 0 18px;
@@ -159,6 +160,12 @@ h3 {
   background: var(--paper);
   border: 1px solid var(--line);
   outline-color: var(--green);
+}
+
+.input-row select {
+  appearance: none;
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .input-row button,

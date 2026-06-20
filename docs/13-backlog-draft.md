@@ -6,6 +6,27 @@ Do not write code from this backlog until specific implementation tasks are crea
 
 ## P0 MVP
 
+### 0. Reposition MVP to Bulk Sender Readiness
+
+**Description:** Update product, SEO, schema and implementation tasks so the first vertical answers Gmail/Yahoo bulk sender readiness instead of generic email domain health.
+
+**Reason:** Bulk sender readiness has clearer urgency, stronger commercial intent and better differentiation than a generic SPF/DMARC/MX checker.
+
+**Acceptance criteria:**
+
+- Home copy uses Bulk Email Readiness positioning.
+- Optional ESP selector is planned and implemented.
+- DKIM selector-aware checks are planned with confidence warnings.
+- Automated DNS checks and manual checks are separated.
+- DMARC `p=none` is described as minimum/monitoring mode, not absolute Gmail non-compliance.
+- No SaaS scope is introduced.
+
+**Priority:** P0
+
+**Dependencies:** Decision log
+
+---
+
 ### 1. Define domain scan result contract
 
 **Description:** Finalize the aggregate response and check result schemas for the MVP.
@@ -14,9 +35,9 @@ Do not write code from this backlog until specific implementation tasks are crea
 
 **Acceptance criteria:**
 
-- Schema includes domain, score, status, summary, checks, nextSteps and disclaimer.
+- Schema includes domain, mode, optional ESP provider, DNS Authentication Score, bulk status, automated checks, manual checks, checklist items, nextSteps and disclaimer.
 - Check schema includes status, severity, summary, technicalDetails, recommendedFix, rawRecords, confidence and canBeFalsePositive.
-- Examples exist for SPF, DMARC, MX and SPF lookup count.
+- Examples exist for SPF, DKIM selector signal, DMARC, MX, SPF lookup count and manual checks.
 
 **Priority:** P0
 
@@ -131,8 +152,10 @@ Do not write code from this backlog until specific implementation tasks are crea
 
 **Acceptance criteria:**
 
-- Ready, partial and not ready states are defined.
+- Ready, needs work, not ready and incomplete states are defined.
 - DMARC missing blocks readiness for bulk sender requirements.
+- DKIM missing/unknown is confidence-aware and cannot be overclaimed.
+- One-click unsubscribe and spam rate are manual checks.
 - Disclaimer is included.
 - No inbox placement guarantee is made.
 
@@ -172,10 +195,11 @@ Do not write code from this backlog until specific implementation tasks are crea
 **Acceptance criteria:**
 
 - `/` is defined.
-- `/spf-checker` is defined.
-- `/dmarc-checker` is defined.
-- `/mx-record-checker` is defined.
-- `/spf-lookup-counter` is defined.
+- `/bulk-email-readiness-checker` is defined.
+- `/gmail-bulk-sender-requirements` is defined.
+- `/dmarc-policy-bulk-email` is defined.
+- `/guides/mailchimp-gmail-compliance` is defined.
+- Secondary SPF, DMARC, MX and SPF lookup pages remain available.
 - Internal links are defined.
 
 **Priority:** P0
@@ -224,9 +248,9 @@ Do not write code from this backlog until specific implementation tasks are crea
 
 ---
 
-### 12. Gmail/Yahoo sender requirements page
+### 12. Gmail/Yahoo bulk sender requirements page
 
-**Description:** Create a dedicated page for basic Gmail/Yahoo readiness.
+**Description:** Create a dedicated page for Gmail/Yahoo bulk sender readiness.
 
 **Reason:** This can capture search demand from sender requirement changes.
 

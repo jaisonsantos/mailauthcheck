@@ -29,6 +29,18 @@ import { buildDeveloperReport, statusLabel, toneFromStatus } from "@/lib/report"
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_MAILAUTHCHECK_API_URL ?? "http://127.0.0.1:8000";
 
+const espProviders = [
+  { id: "", name: "I do not know / Other" },
+  { id: "mailchimp", name: "Mailchimp" },
+  { id: "brevo", name: "Brevo" },
+  { id: "klaviyo", name: "Klaviyo" },
+  { id: "sendgrid", name: "SendGrid" },
+  { id: "mailgun", name: "Mailgun" },
+  { id: "resend", name: "Resend" },
+  { id: "amazon_ses", name: "Amazon SES" },
+  { id: "hubspot", name: "HubSpot" },
+];
+
 function StatusIcon({ tone }: { tone: "ok" | "warn" | "error" }) {
   if (tone === "ok") {
     return <CheckCircle2 aria-hidden="true" />;
@@ -65,6 +77,7 @@ function ScoreFlags({ result }: { result: AggregateResult }) {
 
 export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   const [domain, setDomain] = useState("");
+  const [espProvider, setEspProvider] = useState("");
   const [result, setResult] = useState<AggregateResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -78,7 +91,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   }, [config.placeholderResult.score, result]);
 
   const displayResult = result ?? config.placeholderResult;
-  const leadCaptureUrl = result ? buildLeadCaptureUrl(result) : null;
+  const leadCaptureUrl = result ? buildLeadCaptureUrl(result, espProvider || undefined) : null;
   const leadCaptureChannel =
     leadCaptureUrl?.startsWith("mailto:") ? "mailto" : leadCaptureUrl ? "external_form" : null;
 
@@ -88,6 +101,8 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
     trackEvent("scan_started", {
       tool: config.pathname,
       domain_entered: normalizedDomain.length > 0,
+      esp_selected: espProvider.length > 0,
+      esp_provider: espProvider || null,
     });
     setIsLoading(true);
     setErrorMessage(null);
@@ -106,7 +121,11 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
               headers: {
                 "content-type": "application/json",
               },
-              body: JSON.stringify({ domain }),
+              body: JSON.stringify({
+                domain,
+                mode: "bulk_sender",
+                espProvider: espProvider || null,
+              }),
             }
           : undefined,
       );
@@ -143,6 +162,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
           domain: aggregateResult.domain,
           status: aggregateResult.status,
           score: aggregateResult.score,
+          esp_provider: espProvider || null,
         });
       } else {
         const normalizedResult = normalizeCheckListResult(payload as CheckListResult);
@@ -152,6 +172,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
           domain: normalizedResult.domain,
           status: normalizedResult.status,
           score: normalizedResult.score,
+          esp_provider: espProvider || null,
         });
       }
     } catch {
@@ -163,6 +184,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
         tool: config.pathname,
         domain: normalizedDomain || null,
         error: "network_error",
+        esp_provider: espProvider || null,
       });
     } finally {
       setIsLoading(false);
@@ -223,6 +245,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       domain: result.domain,
       status: result.status,
       lead_channel: leadCaptureChannel,
+      esp_provider: espProvider || null,
     });
     trackEvent("cta_help_clicked", {
       tool: config.pathname,
@@ -230,12 +253,14 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       domain: result.domain,
       status: result.status,
       lead_channel: leadCaptureChannel,
+      esp_provider: espProvider || null,
     });
     trackEvent("lead_form_started", {
       tool: config.pathname,
       domain: result.domain,
       status: result.status,
       lead_channel: leadCaptureChannel,
+      esp_provider: espProvider || null,
     });
   }
 
@@ -262,6 +287,19 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                   value={domain}
                   onChange={(event) => setDomain(event.target.value)}
                 />
+                <select
+                  id="espProvider"
+                  name="espProvider"
+                  aria-label="Email service provider"
+                  value={espProvider}
+                  onChange={(event) => setEspProvider(event.target.value)}
+                >
+                  {espProviders.map((provider) => (
+                    <option key={provider.id || "unknown"} value={provider.id}>
+                      {provider.name}
+                    </option>
+                  ))}
+                </select>
                 <button type="submit" disabled={isLoading}>
                   {isLoading ? <LoaderCircle aria-hidden="true" className="spin" /> : null}
                   <span>{isLoading ? "Checking public DNS records..." : config.buttonLabel}</span>
@@ -270,7 +308,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
               </div>
               <p>
                 {errorMessage ??
-                  "Enter a domain like example.com. Do not include https:// or email addresses."}
+                  "Enter a domain like example.com. Choose an ESP if you know which service sends your campaigns."}
               </p>
             </form>
           </div>

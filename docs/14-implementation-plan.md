@@ -7,7 +7,9 @@ It is a planning document only. Do not write code from this file until a specifi
 ## Decision status
 
 - **accepted:** MailAuthCheck starts as a free, fast, SEO-friendly utility site.
-- **accepted:** MVP checks are SPF, DMARC, MX, SPF DNS lookup count and basic Gmail/Yahoo readiness.
+- **accepted:** The first product vertical is Bulk Sender Readiness for Gmail/Yahoo bulk sender requirements.
+- **accepted:** MVP checks are SPF, DKIM selector signals, DMARC, MX, SPF DNS lookup count and manual bulk sender checklist items.
+- **accepted:** DMARC `p=none` is minimum/monitoring mode for bulk sender requirements, not absolute Gmail non-compliance.
 - **accepted:** The MVP has no login, dashboard, billing, database, recurring monitoring or paid API.
 - **accepted:** Preferred stack is Next.js for frontend/SEO and FastAPI for DNS/API checks.
 - **hypothesis:** Lightweight lead capture can create assisted setup requests without turning the MVP into SaaS.
@@ -64,9 +66,10 @@ Plan the first static interface before real DNS logic is connected.
 
 - Define the static homepage structure.
 - Plan a mobile-first layout with the domain input visible above the fold.
-- Include hero copy from the product brief.
-- Plan a domain input state without real scanning behavior.
-- Design mocked result cards for SPF, DMARC, MX, SPF lookup count and Gmail/Yahoo readiness.
+- Include bulk sender hero copy from the product brief.
+- Plan a domain input state and optional ESP selector without real scanning behavior.
+- Design mocked result cards for SPF, DKIM selector signal, DMARC, MX, SPF lookup count and Gmail/Yahoo readiness.
+- Include a manual checks panel for one-click unsubscribe and spam-rate review.
 - Add a simple score preview using realistic placeholder states.
 - Plan a next steps section with 1-3 practical recommendations.
 - Include CTA copy: `Need help fixing this?`
@@ -81,7 +84,8 @@ Plan the first static interface before real DNS logic is connected.
 ### Acceptance criteria
 
 - The static shell answers the central question clearly.
-- Mocked cards match the planned result schema.
+- Mocked cards match the planned bulk result schema.
+- Manual requirements are shown as manual checks, not passed checks.
 - The UI includes a visible disclaimer that no inbox placement is guaranteed.
 - The CTA exists but does not imply automatic paid checkout.
 - The page is useful on mobile and desktop.
@@ -107,7 +111,8 @@ Plan the minimum backend API shape without complex DNS logic.
 
 ### Small tasks
 
-- Define `POST /api/check-domain` as the main endpoint.
+- Keep `POST /api/check-domain` as the main aggregate endpoint for now.
+- Plan request support for `mode=bulk_sender` and optional `espProvider`.
 - Confirm whether any auxiliary health endpoint is needed.
 - Apply domain validation rules before DNS work.
 - Return the aggregate response structure from the API contract.
@@ -124,7 +129,7 @@ Plan the minimum backend API shape without complex DNS logic.
 
 - `POST /api/check-domain` accepts a domain-only payload.
 - URLs, email addresses and empty input are rejected.
-- API responses include domain, score, status, summary, checks, next steps and disclaimer.
+- API responses include domain, mode, ESP provider, DNS authentication score, bulk status, automated checks, manual checks, checklist items, next steps and disclaimer.
 - Errors are understandable for non-technical users.
 - No persistence is required.
 
@@ -153,12 +158,14 @@ Plan implementation of the technical checks required for the MVP.
 - Implement SPF TXT lookup behavior.
 - Detect multiple SPF records.
 - Estimate SPF DNS lookup count.
+- Implement DKIM TXT lookup behavior for selected/common ESP selectors.
 - Implement DMARC lookup at `_dmarc.domain`.
 - Parse DMARC policy values: `p=none`, `p=quarantine`, `p=reject`.
 - Define DNS timeout behavior.
 - Define DNS error behavior.
 - Set `confidence` for each check.
 - Set `canBeFalsePositive` where simplified parsing or DNS behavior may mislead.
+- Generate manual checks for one-click unsubscribe and spam rate without marking them as verified.
 
 ### Expected files
 
@@ -169,7 +176,10 @@ Plan implementation of the technical checks required for the MVP.
 
 - MX results include hostnames and priorities when available.
 - SPF results distinguish missing, single record, multiple records and lookup-count risk.
+- DKIM results distinguish found, not found, unknown selector, malformed record and DNS errors.
+- DKIM selector misses are confidence-aware and can be false positives.
 - DMARC results distinguish missing record and policy state.
+- DMARC `p=none` is represented as minimum/monitoring mode.
 - Timeout and DNS errors do not crash the whole scan.
 - Each check can expose raw records for technical users.
 
@@ -181,7 +191,7 @@ Plan implementation of the technical checks required for the MVP.
 
 ### What not to do
 
-- Do not add DKIM selector guessing.
+- Do not present guessed DKIM selector misses as proof that DKIM is absent.
 - Do not add blacklist checks.
 - Do not add BIMI, MTA-STS or TLS-RPT.
 - Do not add AI diagnosis in the DNS core.
@@ -194,8 +204,9 @@ Plan score, labels, result cards and explanations in a way users can act on.
 
 ### Small tasks
 
-- Apply a score from 0-100.
-- Map score and blockers to `Ready`, `Needs attention` or `Not ready`.
+- Apply a DNS Authentication Score from 0-100.
+- Map score and blockers to `Ready`, `Needs work`, `Not ready` or `DNS checks incomplete`.
+- Render manual checks separately from the score.
 - Define blockers that prevent `Ready`.
 - Render result cards for each check.
 - Show concise explanations first.
@@ -211,7 +222,8 @@ Plan score, labels, result cards and explanations in a way users can act on.
 ### Acceptance criteria
 
 - Users can understand whether the domain is minimally ready.
-- A missing DMARC or broken SPF cannot be presented as fully ready.
+- A missing DMARC, broken SPF or missing/unknown DKIM cannot be presented as fully ready for bulk sending.
+- One-click unsubscribe and spam rate cannot be marked as passed unless verified.
 - Next steps are practical and limited.
 - Technical users can inspect raw records.
 - Every result avoids inbox placement guarantees.
@@ -237,7 +249,11 @@ Plan the five initial indexable pages.
 
 ### Small tasks
 
-- Plan `/` as the main scanner page.
+- Plan `/` as the main Bulk Email Readiness Checker page.
+- Plan `/bulk-email-readiness-checker`.
+- Plan `/gmail-bulk-sender-requirements`.
+- Plan `/dmarc-policy-bulk-email`.
+- Plan `/guides/mailchimp-gmail-compliance`.
 - Plan `/spf-checker`.
 - Plan `/dmarc-checker`.
 - Plan `/mx-record-checker`.
@@ -268,7 +284,8 @@ Plan the five initial indexable pages.
 
 ### What not to do
 
-- Do not add DKIM, BIMI, blacklist or header analyzer pages in the MVP.
+- Do not add BIMI, blacklist or header analyzer pages in the MVP.
+- Do not add ESP API integrations.
 - Do not add provider-specific guides before core pages are stable.
 - Do not use claims that guarantee deliverability.
 

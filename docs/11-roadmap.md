@@ -6,7 +6,7 @@ Advance only after real signals.
 
 Do not build SaaS infrastructure before the utility site proves demand.
 
-## V0 — MVP utility site
+## V0 — Bulk utility MVP
 
 ### Condition to enter
 
@@ -15,15 +15,18 @@ Current phase.
 ### Features allowed
 
 - Home scanner.
+- Optional ESP selector.
 - SPF check.
+- DKIM selector signal.
 - DMARC check.
 - MX check.
 - SPF DNS lookup count.
-- Basic Gmail/Yahoo readiness.
-- Score.
+- Gmail/Yahoo bulk readiness.
+- Manual checks for one-click unsubscribe and spam-rate review.
+- DNS Authentication Score.
 - Next steps.
 - Setup assistance CTA.
-- First 5 SEO pages.
+- First bulk-focused SEO pages.
 
 ### Features prohibited
 
@@ -53,11 +56,11 @@ Suggested signals:
 
 ### Features allowed
 
-- DKIM selector checker.
-- Gmail/Yahoo sender requirements checker.
-- Google Workspace guide.
-- Microsoft 365 guide.
-- Mailchimp/Brevo/SendGrid guides.
+- Mailchimp, Brevo, Klaviyo, SendGrid and Resend guide cluster.
+- Gmail/Yahoo sender requirement pages.
+- Google Postmaster Tools guide.
+- One-click unsubscribe explainer.
+- Dedicated DKIM selector checker.
 - Better internal linking.
 - FAQ improvements.
 
@@ -72,7 +75,7 @@ Suggested signals:
 
 Creating generic SEO content that does not rank or convert.
 
-## V2 — Lead capture/setup
+## V2 — Header analyzer / setup validation
 
 ### Condition to advance
 
@@ -86,12 +89,11 @@ Suggested signals:
 
 ### Features allowed
 
-- better lead form;
-- email checklist;
-- “copy technical report”;
-- “send this to my developer” flow;
-- manual setup service page;
-- simple pricing experiment for assisted setup, if validated.
+- user-pasted email headers;
+- List-Unsubscribe header detection;
+- From/SPF/DKIM/DMARC alignment hints;
+- message formatting basics;
+- better lead form and assisted setup service page.
 
 ### Features prohibited
 
@@ -104,7 +106,7 @@ Suggested signals:
 
 Manual service can become time-consuming before revenue is clear.
 
-## V3 — Simple monitoring
+## V3 — Monitoring waitlist / pilot
 
 ### Condition to advance
 

@@ -5,7 +5,7 @@ const leadCaptureUrl = process.env.NEXT_PUBLIC_LEAD_CAPTURE_URL;
 const contactEmail =
   process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "hello@mailauthcheck.com";
 
-export function buildLeadCaptureUrl(result: AggregateResult) {
+export function buildLeadCaptureUrl(result: AggregateResult, espProvider?: string) {
   const issueSummary = result.checks
     .filter((check) => check.status !== "ok")
     .map((check) => `${check.checkName}: ${check.summary}`)
@@ -19,11 +19,12 @@ export function buildLeadCaptureUrl(result: AggregateResult) {
     const body = encodeURIComponent(
       [
         `Domain: ${result.domain}`,
+        espProvider ? `ESP: ${espProvider}` : "ESP: not specified",
         `Status: ${result.status}`,
         `Score: ${result.score}/100`,
         issueSummary ? `Main issues: ${issueSummary}` : "Main issues: none listed",
         "",
-        "I would like help reviewing SPF, DMARC and MX for this domain.",
+        "I would like help reviewing SPF, DKIM, DMARC and MX for this domain before bulk sending.",
       ].join("\n"),
     );
 
@@ -32,6 +33,9 @@ export function buildLeadCaptureUrl(result: AggregateResult) {
 
   const url = new URL(leadCaptureUrl);
   url.searchParams.set("domain", result.domain);
+  if (espProvider) {
+    url.searchParams.set("espProvider", espProvider);
+  }
   url.searchParams.set("status", result.status);
   url.searchParams.set("score", String(result.score));
   if (issueSummary) {

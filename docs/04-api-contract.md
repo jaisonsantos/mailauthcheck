@@ -8,17 +8,21 @@ No implementation should be created from this document until an explicit impleme
 
 ## Main endpoint
 
-`POST /api/check-domain` is the primary endpoint of the MVP.
+`POST /api/check-domain` is the primary aggregate endpoint of the MVP.
 
 The frontend should use this endpoint for the homepage and initial tool pages.
+
+The bulk sender refactor keeps this endpoint to reduce risk. A future `/api/v1/bulk-readiness` endpoint can be considered after the response shape stabilizes.
 
 ## Status values
 
 General scan status:
 
 - `ready`
+- `needs_work`
 - `needs_attention`
 - `not_ready`
+- `incomplete`
 - `error`
 
 Check status:
@@ -26,6 +30,8 @@ Check status:
 - `ok`
 - `warning`
 - `missing`
+- `manual_check`
+- `unknown`
 - `error`
 
 Severity:
@@ -47,9 +53,13 @@ Confidence:
 
 ~~~json
 {
-  "domain": "example.com"
+  "domain": "example.com",
+  "mode": "bulk_sender",
+  "espProvider": "mailchimp"
 }
 ~~~
+
+`mode` and `espProvider` are optional during the transition. When omitted, the backend should default to the aggregate scanner behavior currently used by the frontend.
 
 ### Success response
 
@@ -58,9 +68,13 @@ HTTP 200
 ~~~json
 {
   "domain": "example.com",
+  "mode": "bulk_sender",
+  "espProvider": "mailchimp",
   "score": 72,
-  "status": "needs_attention",
-  "summary": "Your domain has SPF and MX records, but DMARC is missing.",
+  "dnsAuthenticationScore": 72,
+  "status": "needs_work",
+  "bulkStatus": "needs_work",
+  "summary": "Your domain has SPF and MX records, but DMARC or DKIM still needs attention before bulk sending.",
   "checks": [
     {
       "checkName": "SPF",
@@ -75,13 +89,27 @@ HTTP 200
       "canBeFalsePositive": false
     }
   ],
-  "nextSteps": [
-    "Add a DMARC record at _dmarc.example.com.",
-    "Keep SPF DNS lookups below 10."
+  "automatedChecks": [],
+  "manualChecks": [
+    {
+      "checkName": "One-click unsubscribe",
+      "status": "manual_check",
+      "summary": "This cannot be verified from DNS.",
+      "manualVerificationInstructions": "Check your ESP campaign settings and message headers for List-Unsubscribe and one-click unsubscribe support."
+    }
   ],
-  "disclaimer": "This is a DNS/authentication check and does not guarantee inbox placement."
+  "gmailBulkChecklist": [],
+  "yahooBulkChecklist": [],
+  "nextSteps": [
+    "Confirm DKIM in your ESP domain authentication screen.",
+    "Keep SPF DNS lookups below 10.",
+    "Review one-click unsubscribe and spam rate in Postmaster/provider tools."
+  ],
+  "disclaimer": "This tool checks public DNS records and known bulk sender readiness signals. It does not guarantee inbox placement, campaign performance, sender reputation or provider acceptance."
 }
 ~~~
+
+During migration, `score`, `status` and `checks` may remain for frontend compatibility. New UI should prefer `dnsAuthenticationScore`, `bulkStatus`, `automatedChecks` and `manualChecks` when present.
 
 ### Possible HTTP statuses
 
@@ -175,7 +203,7 @@ HTTP 200
       "status": "warning",
       "severity": "medium",
       "summary": "DMARC is present, but policy is monitoring only.",
-      "technicalDetails": "Policy p=none does not ask receivers to quarantine or reject failing mail.",
+      "technicalDetails": "Policy p=none is minimum/monitoring mode. It does not ask receivers to quarantine or reject failing mail.",
       "recommendedFix": "Use p=none to monitor first. Move to quarantine or reject only after confirming legitimate senders pass authentication.",
       "rawRecords": ["v=DMARC1; p=none; rua=mailto:dmarc@example.com"],
       "confidence": "high",
@@ -229,5 +257,8 @@ HTTP 200
 
 - The frontend should render cards from the `checks` array.
 - The API must not claim inbox placement or deliverability guarantees.
+- Manual requirements must not be marked as passed unless the API verifies them.
+- DKIM selector misses must use low confidence or `canBeFalsePositive=true` when selectors are guessed.
+- DMARC `p=none` must be described as minimum/monitoring mode, not absolute Gmail non-compliance.
 - Endpoint responses should be stable enough for multiple SEO pages to reuse.
 - More endpoints should not be added unless they support the MVP pages or a documented roadmap phase.

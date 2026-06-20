@@ -1,8 +1,8 @@
 # MailAuthCheck
 
-MailAuthCheck is a free, fast, SEO-friendly utility site that checks whether a domain is minimally ready to send email correctly.
+MailAuthCheck is a free, fast, SEO-friendly utility site that checks whether a domain is ready for bulk email sending to Gmail and Yahoo.
 
-The user enters a domain, such as `example.com`, and receives a simple diagnostic report covering SPF, DMARC, MX records, SPF DNS lookup count, and basic Gmail/Yahoo sender-readiness signals.
+The user enters a domain, such as `example.com`, optionally selects an email service provider, and receives a practical report covering SPF, DKIM selector signals, DMARC, MX records, SPF DNS lookup count, and manual bulk-sender requirements that cannot be verified from DNS alone.
 
 ## Product vision
 
@@ -10,7 +10,7 @@ MailAuthCheck should work like a practical utility site, not like a SaaS product
 
 The goal is to give users an immediate answer to one question:
 
-> Is my domain ready to send email?
+> Is my domain ready for bulk email sending to Gmail and Yahoo?
 
 The MVP must be useful without login, dashboard, billing, or complex onboarding.
 
@@ -25,16 +25,19 @@ The first version should be:
 - clear for non-technical users;
 - useful for developers and agencies;
 - prepared for SEO pages and future lead capture;
-- focused on public DNS checks only.
+- focused on public DNS checks and explicit manual checklist items.
 
 ## What the MVP includes
 
 - Domain input at the top of the page.
+- Optional ESP selector.
 - SPF check.
+- DKIM selector-aware check for selected/common ESP selectors.
 - DMARC check.
 - MX check.
 - SPF DNS lookup count.
-- Basic Gmail/Yahoo readiness.
+- Gmail/Yahoo bulk sender readiness checklist.
+- Manual checks for one-click unsubscribe and spam-rate monitoring.
 - Simple score: Ready / Needs attention / Not ready.
 - Plain-English explanation.
 - Optional technical details.
@@ -70,16 +73,20 @@ The MVP must not include:
 - MTA-STS;
 - TLS-RPT;
 - email header analyzer.
+- ESP API integrations;
+- email list verification;
+- email content scanning;
+- sending real test emails.
 
 ## Initial positioning
 
 **Name:** MailAuthCheck
 
-**Headline:** Check if your domain is ready to send email
+**Headline:** Bulk Email Readiness Checker
 
-**Subheadline:** Run a quick SPF, DMARC, MX and Gmail/Yahoo readiness check. Get a simple explanation of what is missing and what to fix next.
+**Subheadline:** Check if your domain meets the basic Gmail and Yahoo bulk sender requirements before your next campaign. Review SPF, DKIM, DMARC, MX, SPF lookups and manual checks like one-click unsubscribe and spam-rate monitoring.
 
-**Disclaimer:** This check does not guarantee inbox placement. It only verifies public DNS and basic sender-readiness signals.
+**Disclaimer:** This tool checks public DNS records and known bulk sender readiness signals. It does not guarantee inbox placement, campaign performance, sender reputation or provider acceptance.
 
 ## Preferred technical direction
 
