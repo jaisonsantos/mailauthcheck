@@ -25,11 +25,65 @@ export function statusLabel(status: AggregateResult["status"]): string {
   }
 }
 
-export function buildDeveloperReport(result: AggregateResult): string {
+type DeveloperReportContext = {
+  toolName: string;
+  scope: string;
+  statusLabels: Record<AggregateResult["status"], string>;
+};
+
+function formatRawRecords(check: CheckResult): string[] {
+  if (check.rawRecords.length === 0) {
+    return [];
+  }
+
+  if (check.checkName === "SPF Lookup Count") {
+    const [rootRecord, ...includedRecords] = check.rawRecords;
+    const lines = ["  Root SPF record:", `  ${rootRecord}`];
+
+    if (includedRecords.length > 0) {
+      lines.push("", "  Included SPF records:");
+      for (const record of includedRecords) {
+        const separatorIndex = record.indexOf(": ");
+        if (separatorIndex > 0) {
+          lines.push(
+            `  - ${record.slice(0, separatorIndex)}:`,
+            `    ${record.slice(separatorIndex + 2)}`,
+          );
+        } else {
+          lines.push(`  - ${record}`);
+        }
+      }
+    } else {
+      lines.push("", "  Included SPF records:", "  - No included SPF records were expanded.");
+    }
+
+    return lines;
+  }
+
+  return ["  Raw records:", ...check.rawRecords.map((record) => `  - ${record}`)];
+}
+
+function formatTechnicalDetails(details: string): string[] {
+  const [firstLine, ...rest] = details.split("\n");
+  return [`  Technical details: ${firstLine}`, ...rest.map((line) => `  ${line}`)];
+}
+
+export function buildDeveloperReport(
+  result: AggregateResult,
+  context?: DeveloperReportContext,
+): string {
+  const statusLabels = context?.statusLabels ?? {
+    ready: statusLabel("ready"),
+    needs_attention: statusLabel("needs_attention"),
+    not_ready: statusLabel("not_ready"),
+    error: statusLabel("error"),
+  };
+
   const lines = [
+    ...(context ? [`Tool: ${context.toolName}`, `Scope: ${context.scope}`] : []),
     `Domain: ${result.domain}`,
     `Score: ${result.score}/100`,
-    `Status: ${statusLabel(result.status)}`,
+    `Status: ${statusLabels[result.status]}`,
     `Summary: ${result.summary}`,
     "",
     "Checks:",
@@ -38,11 +92,9 @@ export function buildDeveloperReport(result: AggregateResult): string {
   for (const check of result.checks) {
     lines.push(`- ${check.checkName}: ${check.summary}`);
     if (check.technicalDetails) {
-      lines.push(`  Technical details: ${check.technicalDetails}`);
+      lines.push(...formatTechnicalDetails(check.technicalDetails));
     }
-    if (check.rawRecords.length > 0) {
-      lines.push(`  Raw records: ${check.rawRecords.join(" | ")}`);
-    }
+    lines.push(...formatRawRecords(check));
   }
 
   if (result.nextSteps.length > 0) {

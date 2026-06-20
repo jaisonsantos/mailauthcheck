@@ -122,7 +122,11 @@ class BackendEdgeCaseTests(unittest.TestCase):
             lookup_check.summary,
             "SPF exceeds the 10 DNS lookup limit.",
         )
-        self.assertIn("Estimated DNS lookups: 11.", lookup_check.technicalDetails or "")
+        self.assertIn("Estimated SPF DNS lookups: 11 of 10.", lookup_check.technicalDetails or "")
+        self.assertIn(
+            "No included SPF records were expanded successfully.",
+            lookup_check.technicalDetails or "",
+        )
 
     def test_aggregate_status_is_error_when_dns_requests_fail(self) -> None:
         with patch.object(

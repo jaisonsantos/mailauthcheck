@@ -282,6 +282,10 @@ h3 {
   align-items: stretch;
 }
 
+.input-row.single-input {
+  grid-template-columns: 1fr;
+}
+
 .input-row button {
   grid-column: 1 / -1;
 }
@@ -558,11 +562,24 @@ h3 {
   line-height: 1.55;
 }
 
-.check-card code {
+.raw-record-label {
   display: block;
   margin-top: auto;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.check-card code {
+  display: block;
   padding: 12px;
+  max-height: 180px;
+  overflow: auto;
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  word-break: break-word;
   color: var(--blue);
   background: var(--blue-soft);
   border: 1px solid rgba(31, 93, 122, 0.16);

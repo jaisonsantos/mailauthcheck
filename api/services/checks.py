@@ -53,6 +53,7 @@ class SPFCountResult:
     can_be_false_positive: bool
     technical_details: str
     raw_records: list[str]
+    included_records: list[tuple[str, int | None, str]]
     error: str | None = None
 
 
@@ -224,13 +225,16 @@ def _estimate_spf_lookups(
             can_be_false_positive=True,
             technical_details="SPF lookup recursion stopped to avoid loops or excessive depth.",
             raw_records=[spf_record],
+            included_records=[],
             error="recursion_limit",
         )
 
     visited.add(domain_key)
     count = 0
     raw_records = [spf_record]
+    included_records: list[tuple[str, int | None, str]] = []
     uncertain = False
+    attempted_expansion = False
     technical_notes: list[str] = []
 
     for token in spf_record.split():
@@ -238,6 +242,7 @@ def _estimate_spf_lookups(
 
         if normalized.startswith("include:"):
             count += 1
+            attempted_expansion = True
             include_domain = normalized.split(":", 1)[1]
             nested = _get_single_spf_record(include_domain)
             if nested.status == "ok" and nested.value:
@@ -252,7 +257,8 @@ def _estimate_spf_lookups(
                 else:
                     count += nested_result.count
                 raw_records.extend(nested_result.raw_records)
-                technical_notes.append(nested_result.technical_details)
+                included_records.append((include_domain, nested_result.count, nested.value))
+                included_records.extend(nested_result.included_records)
             else:
                 uncertain = True
                 technical_notes.append(
@@ -261,6 +267,7 @@ def _estimate_spf_lookups(
 
         elif normalized.startswith("redirect="):
             count += 1
+            attempted_expansion = True
             redirect_domain = normalized.split("=", 1)[1]
             nested = _get_single_spf_record(redirect_domain)
             if nested.status == "ok" and nested.value:
@@ -275,7 +282,8 @@ def _estimate_spf_lookups(
                 else:
                     count += nested_result.count
                 raw_records.extend(nested_result.raw_records)
-                technical_notes.append(nested_result.technical_details)
+                included_records.append((redirect_domain, nested_result.count, nested.value))
+                included_records.extend(nested_result.included_records)
             else:
                 uncertain = True
                 technical_notes.append(
@@ -291,18 +299,37 @@ def _estimate_spf_lookups(
         elif normalized.startswith("exists:"):
             count += 1
 
-    details = f"Estimated DNS lookups: {count}."
+    details_lines = [f"Estimated SPF DNS lookups: {count} of 10."]
+    if included_records:
+        details_lines.append("Included SPF records checked:")
+        for included_domain, nested_count, _record in included_records:
+            nested_label = (
+                "unknown nested DNS lookups"
+                if nested_count is None
+                else f"{nested_count} nested DNS lookups"
+            )
+            details_lines.append(f"- {included_domain}: {nested_label}.")
+    elif attempted_expansion:
+        details_lines.append("No included SPF records were expanded successfully.")
+    else:
+        details_lines.append("No included SPF records were expanded.")
     if uncertain:
-        details = f"{details} Some nested SPF parsing was incomplete."
+        details_lines.append("Some nested SPF parsing was incomplete.")
     if technical_notes:
-        details = f"{details} {' '.join(dict.fromkeys(technical_notes))}"
+        details_lines.extend(dict.fromkeys(technical_notes))
 
     return SPFCountResult(
         count=count,
         confidence="medium",
         can_be_false_positive=uncertain,
-        technical_details=details,
-        raw_records=list(dict.fromkeys(raw_records)),
+        technical_details="\n".join(details_lines),
+        raw_records=list(
+            dict.fromkeys(
+                [spf_record]
+                + [f"{included_domain}: {record}" for included_domain, _count, record in included_records]
+            )
+        ),
+        included_records=included_records,
     )
 
 

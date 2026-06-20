@@ -31,6 +31,50 @@ export type CheckerPageConfig = {
   guidePreviews: GuidePreview[];
   faqs: FAQItem[];
   relatedTools: ToolLink[];
+  reportToolName: string;
+  reportScope: string;
+  statusLabels: {
+    ready: string;
+    needs_attention: string;
+    not_ready: string;
+    error: string;
+  };
+  showEspSelector: boolean;
+};
+
+const bulkStatusLabels: CheckerPageConfig["statusLabels"] = {
+  ready: "Ready",
+  needs_attention: "Needs work",
+  not_ready: "Not ready",
+  error: "Error",
+};
+
+const spfStatusLabels: CheckerPageConfig["statusLabels"] = {
+  ready: "SPF OK",
+  needs_attention: "SPF needs review",
+  not_ready: "SPF problem",
+  error: "SPF problem",
+};
+
+const dmarcStatusLabels: CheckerPageConfig["statusLabels"] = {
+  ready: "DMARC OK",
+  needs_attention: "DMARC needs review",
+  not_ready: "DMARC problem",
+  error: "DMARC problem",
+};
+
+const mxStatusLabels: CheckerPageConfig["statusLabels"] = {
+  ready: "MX OK",
+  needs_attention: "MX needs review",
+  not_ready: "MX problem",
+  error: "MX problem",
+};
+
+const spfLookupStatusLabels: CheckerPageConfig["statusLabels"] = {
+  ready: "Lookup count OK",
+  needs_attention: "Lookup count needs review",
+  not_ready: "Lookup count problem",
+  error: "Lookup count problem",
 };
 
 const homePreview: AggregateResult = {
@@ -206,6 +250,10 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsHeading: "Automated DNS signals plus manual bulk checks",
     resultsIntro: "Review the combined check first, then inspect individual cards, confidence and raw DNS records.",
     placeholderResult: homePreview,
+    reportToolName: "Bulk Email Readiness Checker",
+    reportScope: "Bulk sender readiness check based on public DNS plus manual checklist items.",
+    statusLabels: bulkStatusLabels,
+    showEspSelector: true,
     guidePreviews: [
       {
         title: "Mailchimp Gmail compliance guide",
@@ -270,6 +318,10 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsIntro:
       "Use the DNS Authentication Score first, then review manual checks before sending campaigns.",
     placeholderResult: homePreview,
+    reportToolName: "Bulk Email Readiness Checker",
+    reportScope: "Bulk sender readiness check based on public DNS plus manual checklist items.",
+    statusLabels: bulkStatusLabels,
+    showEspSelector: true,
     guidePreviews: [
       {
         title: "Mailchimp Gmail compliance guide",
@@ -324,6 +376,10 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsIntro:
       "SPF, DKIM and DMARC can be checked from DNS. Spam rate and unsubscribe support need provider or message-level review.",
     placeholderResult: homePreview,
+    reportToolName: "Gmail Bulk Sender Requirements Checker",
+    reportScope: "Gmail bulk sender readiness check based on public DNS plus manual checklist items.",
+    statusLabels: bulkStatusLabels,
+    showEspSelector: true,
     guidePreviews: [
       {
         title: "Google Postmaster Tools guide",
@@ -378,6 +434,10 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsIntro:
       "This page stays focused on DMARC policy interpretation for bulk sending. SPF and DKIM still matter, but the main question here is whether your DMARC policy is present and how strong it is.",
     placeholderResult: dmarcPreview,
+    reportToolName: "DMARC Policy for Bulk Email",
+    reportScope: "DMARC policy check only. This is not a full bulk sender readiness report.",
+    statusLabels: dmarcStatusLabels,
+    showEspSelector: false,
     guidePreviews: [
       {
         title: "Google Postmaster Tools guide",
@@ -441,6 +501,10 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
         "Review one-click unsubscribe behavior and spam-rate monitoring outside DNS before your next campaign.",
       ],
     },
+    reportToolName: "Mailchimp Gmail Compliance Guide",
+    reportScope: "Mailchimp-oriented bulk sender readiness check based on public DNS plus manual checklist items.",
+    statusLabels: bulkStatusLabels,
+    showEspSelector: true,
     guidePreviews: [
       {
         title: "DMARC policy for bulk email",
@@ -493,6 +557,10 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsHeading: "Focused SPF result",
     resultsIntro: "This page stays focused on SPF policy quality and SPF DNS lookup pressure.",
     placeholderResult: spfPreview,
+    reportToolName: "SPF Record Checker",
+    reportScope: "SPF-only check. This is not a full bulk sender readiness report.",
+    statusLabels: spfStatusLabels,
+    showEspSelector: false,
     guidePreviews: [],
     faqs: [
       {
@@ -531,6 +599,10 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsHeading: "Focused DMARC result",
     resultsIntro: "This page stays focused on DMARC presence, policy mode and the next enforcement step.",
     placeholderResult: dmarcPreview,
+    reportToolName: "DMARC Record Checker",
+    reportScope: "DMARC-only check. This is not a full bulk sender readiness report.",
+    statusLabels: dmarcStatusLabels,
+    showEspSelector: false,
     guidePreviews: [],
     faqs: [
       {
@@ -569,6 +641,10 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsHeading: "Focused MX result",
     resultsIntro: "This page stays focused on mail routing, MX hosts and domains that do not accept incoming mail.",
     placeholderResult: mxPreview,
+    reportToolName: "MX Record Checker",
+    reportScope: "MX-only check. This is not a full bulk sender readiness report.",
+    statusLabels: mxStatusLabels,
+    showEspSelector: false,
     guidePreviews: [],
     faqs: [
       {
@@ -608,6 +684,10 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     resultsHeading: "Focused SPF lookup result",
     resultsIntro: "This page stays focused on lookup-heavy SPF policies and the 10-lookup limit.",
     placeholderResult: spfLookupPreview,
+    reportToolName: "SPF Lookup Counter",
+    reportScope: "SPF lookup-count check only. This is not a full bulk sender readiness report.",
+    statusLabels: spfLookupStatusLabels,
+    showEspSelector: false,
     guidePreviews: [],
     faqs: [
       {
