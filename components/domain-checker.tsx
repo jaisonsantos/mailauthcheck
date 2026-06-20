@@ -792,9 +792,13 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   };
 
   useEffect(() => {
-    const savedLocale = window.localStorage.getItem("mailauthcheck.locale");
-    if (savedLocale === "en" || savedLocale === "es" || savedLocale === "pt") {
-      setLocale(savedLocale);
+    if (SHOW_LOCALE_SELECTOR) {
+      const savedLocale = window.localStorage.getItem("mailauthcheck.locale");
+      if (savedLocale === "en" || savedLocale === "es" || savedLocale === "pt") {
+        setLocale(savedLocale);
+      }
+    } else {
+      setLocale("en");
     }
 
     const savedTheme = window.localStorage.getItem("mailauthcheck.theme");
@@ -809,8 +813,9 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   }, [theme]);
 
   useEffect(() => {
-    window.localStorage.setItem("mailauthcheck.locale", locale);
-    setCopyLabel(chromeCopy[locale].copyReport);
+    const nextLocale = SHOW_LOCALE_SELECTOR ? locale : "en";
+    window.localStorage.setItem("mailauthcheck.locale", nextLocale);
+    setCopyLabel(chromeCopy[nextLocale].copyReport);
   }, [locale]);
 
   const scoreTone = useMemo(() => {

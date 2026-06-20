@@ -176,15 +176,105 @@ def build_spf_check(domain: str) -> tuple[CheckResult, list[str]]:
     lower_record = spf_record.lower()
     uses_unsafe_all = "+all" in lower_record
     missing_all = all(token not in lower_record for token in ["-all", "~all", "?all", "+all"])
+    redirect_target = next(
+        (token.split("=", 1)[1] for token in spf_record.split() if token.startswith("redirect=")),
+        None,
+    )
 
-    if uses_unsafe_all or missing_all:
+    if uses_unsafe_all:
         return (
             make_check(
                 check_name="SPF",
                 status="warning",
                 severity="medium",
                 summary="SPF exists, but the policy looks weak.",
-                technical_details="The SPF record uses +all or does not end with a clear all mechanism.",
+                technical_details="The SPF record uses +all, which is too permissive for a deliberate SPF policy.",
+                recommended_fix="Review the SPF policy so it ends with a deliberate all mechanism, usually ~all or -all.",
+                raw_records=[spf_record],
+                confidence="high",
+                can_be_false_positive=False,
+            ),
+            [spf_record],
+        )
+
+    if missing_all and redirect_target:
+        redirected = _get_single_spf_record(redirect_target)
+        if redirected.status == "ok" and redirected.value:
+            redirected_lower = redirected.value.lower()
+            redirected_uses_unsafe_all = "+all" in redirected_lower
+            redirected_missing_all = all(
+                token not in redirected_lower for token in ["-all", "~all", "?all", "+all"]
+            )
+
+            if not redirected_uses_unsafe_all and not redirected_missing_all:
+                return (
+                    make_check(
+                        check_name="SPF",
+                        status="ok",
+                        severity="info",
+                        summary="Your domain has one SPF record.",
+                        technical_details=(
+                            f"SPF uses redirect to {redirect_target}. "
+                            "The redirected SPF policy ends with a clear all mechanism."
+                        ),
+                        recommended_fix=None,
+                        raw_records=[spf_record, f"{redirect_target}: {redirected.value}"],
+                        confidence="high",
+                        can_be_false_positive=False,
+                    ),
+                    [spf_record],
+                )
+
+            return (
+                make_check(
+                    check_name="SPF",
+                    status="warning",
+                    severity="medium",
+                    summary="SPF exists, but the redirected policy still needs review.",
+                    technical_details=(
+                        f"SPF uses redirect to {redirect_target}, but the redirected SPF policy "
+                        "still uses +all or does not end with a clear all mechanism."
+                    ),
+                    recommended_fix=(
+                        "Review the redirected SPF policy so it ends with a deliberate all "
+                        "mechanism, usually ~all or -all."
+                    ),
+                    raw_records=[spf_record, f"{redirect_target}: {redirected.value}"],
+                    confidence="high",
+                    can_be_false_positive=False,
+                ),
+                [spf_record],
+            )
+
+        return (
+            make_check(
+                check_name="SPF",
+                status="warning",
+                severity="medium",
+                summary="SPF uses redirect, but the redirected policy could not be confirmed.",
+                technical_details=(
+                    f"SPF uses redirect to {redirect_target}. Check the redirected SPF record "
+                    "before judging policy strength."
+                ),
+                recommended_fix=(
+                    "Open the redirected SPF record and confirm that it ends with a deliberate "
+                    "all mechanism, usually ~all or -all."
+                ),
+                raw_records=[spf_record],
+                confidence="medium",
+                can_be_false_positive=True,
+            ),
+            [spf_record],
+        )
+
+    if missing_all:
+        return (
+            make_check(
+                check_name="SPF",
+                status="warning",
+                severity="medium",
+                summary="SPF exists, but the policy looks weak.",
+                technical_details="The SPF record does not end with a clear all mechanism.",
                 recommended_fix="Review the SPF policy so it ends with a deliberate all mechanism, usually ~all or -all.",
                 raw_records=[spf_record],
                 confidence="high",
