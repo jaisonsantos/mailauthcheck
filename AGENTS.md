@@ -4,19 +4,21 @@ This document defines permanent rules for any AI agent, Codex session, automatio
 
 ## Project mission
 
-MailAuthCheck is a free utility site that helps users understand whether a domain is minimally ready to send email correctly.
+MailAuthCheck is a free utility site that helps marketers, small businesses, agencies and developers understand whether a domain is ready for bulk email sending to Gmail and Yahoo.
 
-The product checks public DNS/email authentication signals and explains them clearly:
+The product checks public DNS/email authentication signals, separates automated checks from manual checklist items, and explains them clearly:
 
 - SPF;
+- DKIM selector signals;
 - DMARC;
 - MX;
 - SPF DNS lookup count;
-- basic Gmail/Yahoo sender readiness.
+- Gmail/Yahoo bulk sender readiness;
+- one-click unsubscribe and spam-rate monitoring as manual checks.
 
 The primary user question is:
 
-> Is my domain ready to send email?
+> Is my domain ready for bulk email sending to Gmail and Yahoo?
 
 ## Strategic rule: do not turn this into SaaS too early
 
@@ -29,11 +31,17 @@ Do not introduce SaaS concepts unless the roadmap explicitly moves to a later ph
 Agents may work on documentation, planning, and future implementation tasks related to:
 
 - domain input;
+- optional ESP selector;
 - SPF check;
+- DKIM selector checks for selected/common ESP selectors;
 - DMARC check;
 - MX check;
 - SPF DNS lookup count;
-- basic Gmail/Yahoo readiness;
+- Gmail/Yahoo bulk sender readiness;
+- bulk sender checklist;
+- manual one-click unsubscribe verification instructions;
+- Google Postmaster Tools guidance;
+- provider-specific next steps;
 - simple score;
 - simple result cards;
 - simple next steps;
@@ -65,6 +73,10 @@ Agents must not add or propose implementation for:
 - MTA-STS;
 - TLS-RPT;
 - email header analyzer;
+- ESP API integrations;
+- email list verification;
+- email content scanning;
+- sending real test emails;
 - Kubernetes;
 - microservices;
 - queue systems;
@@ -129,6 +141,10 @@ All user-facing language should be:
 - careful not to promise inbox placement.
 
 Never claim that MailAuthCheck guarantees deliverability, inbox placement, reputation improvement, or spam-folder avoidance.
+
+Never mark a manual requirement as passed unless the tool actually verifies it.
+
+DMARC `p=none` must not be described as non-compliant with Gmail minimum bulk sender requirements. Describe it as minimum/monitoring mode with weak enforcement.
 
 ## Pending decisions
 

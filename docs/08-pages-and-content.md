@@ -5,10 +5,10 @@
 Launch priority:
 
 1. `/`
-2. `/spf-checker`
-3. `/dmarc-checker`
-4. `/mx-record-checker`
-5. `/spf-lookup-counter`
+2. `/bulk-email-readiness-checker`
+3. `/gmail-bulk-sender-requirements`
+4. `/dmarc-policy-bulk-email`
+5. `/guides/mailchimp-gmail-compliance`
 
 These pages should launch in the first 7 days.
 
@@ -16,7 +16,11 @@ These pages should launch in the first 7 days.
 
 | URL | Objective | Search intent | H1 | SEO title | Meta description | Tool input | Expected output | Reuses home logic? | Suggested FAQ | Internal links | CTA |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `/` | General domain email readiness scan | Is my domain ready to send email? | Check if your domain is ready to send email | Free Email Domain Health Check | Check SPF, DMARC, MX and basic sender readiness for your domain. | Domain | Score + SPF/DMARC/MX/SPF lookup/Gmail-Yahoo cards | Yes | What is SPF? What is DMARC? Does this guarantee inbox placement? What does Gmail/Yahoo readiness mean? | All initial tools | Check my domain |
+| `/` | Bulk email readiness scan | Is my domain ready for bulk email to Gmail/Yahoo? | Bulk Email Readiness Checker | Bulk Email Readiness Checker | Check SPF, DKIM, DMARC, MX, SPF lookups and manual Gmail/Yahoo bulk sender requirements. | Domain + optional ESP | DNS score + automated checks + manual checklist | Yes | What is a bulk sender? Is DMARC p=none enough? Does this guarantee inbox placement? How do I check spam rate? | Bulk pages + secondary tools | Check bulk readiness |
+| `/bulk-email-readiness-checker` | SEO-specific bulk readiness tool | Bulk email readiness checker | Bulk Email Readiness Checker | Free Bulk Email Readiness Checker | Check whether your domain has the basic DNS signals expected before bulk sending. | Domain + optional ESP | Same as home scanner | Yes | What does this check? What cannot be checked from DNS? Does this guarantee inbox placement? | Gmail requirements, SPF, DMARC | Check bulk readiness |
+| `/gmail-bulk-sender-requirements` | Explain Gmail bulk sender requirements | Gmail bulk sender requirements | Gmail Bulk Sender Requirements Checker | Gmail Bulk Sender Requirements Checker | Review SPF, DKIM, DMARC, unsubscribe and spam-rate requirements for Gmail bulk senders. | Domain + optional ESP | Checklist with automated and manual items | Yes | Who is a bulk sender? Is p=none enough? Where do I check spam rate? | Bulk checker, DMARC policy | Check Gmail readiness |
+| `/dmarc-policy-bulk-email` | Explain DMARC policy for bulk email | DMARC policy for bulk email | DMARC Policy for Bulk Email | DMARC Policy for Bulk Email | Understand p=none, quarantine and reject for Gmail/Yahoo bulk sender readiness. | Domain | DMARC policy status and explanation | Yes | Is p=none enough? When should I move to quarantine? What is DMARC alignment? | DMARC checker, Gmail requirements | Check DMARC policy |
+| `/guides/mailchimp-gmail-compliance` | Mailchimp-focused bulk sender guide | Mailchimp Gmail compliance | Mailchimp Gmail Compliance Guide | Mailchimp Gmail Compliance Guide | Check SPF, DKIM, DMARC and manual Gmail bulk sender requirements for Mailchimp campaigns. | Domain + Mailchimp selected | ESP-specific next steps | Yes | Which DKIM selectors does Mailchimp use? Does Mailchimp handle unsubscribe? What should I verify in Postmaster Tools? | Bulk checker, Gmail requirements | Check Mailchimp setup |
 | `/spf-checker` | Validate SPF record | Check my SPF record | SPF Record Checker | Free SPF Record Checker | Find SPF records and common SPF issues for your domain. | Domain | SPF status, raw TXT record, multiple SPF warning | Yes | What is SPF? Can I have multiple SPF records? What does `~all` mean? What does `-all` mean? | DMARC checker, SPF lookup counter | Check SPF |
 | `/dmarc-checker` | Validate DMARC record and policy | Check DMARC record | DMARC Record Checker | Free DMARC Record Checker | Check if your domain has a valid DMARC policy. | Domain | DMARC status, policy, raw record, recommended fix | Yes | What is DMARC? What is `p=none`? Should I use quarantine or reject? Does DMARC require SPF or DKIM? | SPF checker, Gmail/Yahoo checker later | Check DMARC |
 | `/mx-record-checker` | Validate MX records | MX record checker | MX Record Checker | Free MX Record Checker | Check mail exchange records for your domain. | Domain | MX status, hostnames, priorities | Yes | What is an MX record? Do I need MX records to send email? Why are MX records missing? What are Google Workspace MX records? | SPF checker, DMARC checker | Check MX |
@@ -46,7 +50,7 @@ These pages should launch in the first 7 days.
 
 | Situation | Copy |
 |---|---|
-| Button | Check my domain |
+| Button | Check bulk readiness |
 | Loading | Checking public DNS records... |
 | Invalid domain | Enter a valid domain, like example.com. Do not include https:// or email addresses. |
 | DNS timeout | DNS lookup took too long. Try again in a moment. |
@@ -54,7 +58,7 @@ These pages should launch in the first 7 days.
 | Help CTA | Need help fixing this? |
 | Developer CTA | Copy technical report |
 | Lead CTA | Send this to my developer |
-| Disclaimer | This is a DNS/authentication check, not a deliverability guarantee. |
+| Disclaimer | This tool checks public DNS and known bulk sender readiness signals. It does not guarantee inbox placement. |
 
 ## Content rules
 
@@ -63,5 +67,7 @@ These pages should launch in the first 7 days.
 - Use simple language first.
 - Hide or collapse technical details.
 - Include raw records for technical users.
+- Never mark manual requirements as passed unless verified.
+- Describe DMARC `p=none` as minimum/monitoring mode, not absolute non-compliance.
 - Avoid long intros before the tool.
 - Avoid claims of guaranteed inbox placement.

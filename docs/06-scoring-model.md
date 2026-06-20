@@ -2,48 +2,62 @@
 
 ## Purpose
 
-MailAuthCheck uses a simple score to help users understand the overall state of a domain.
+MailAuthCheck uses a simple score to help users understand the automated DNS authentication state of a domain for bulk sending.
 
 The score must not pretend to be a precise deliverability score.
 
-It is a basic DNS/authentication health score.
+It is a DNS authentication score, separate from the manual bulk sender checklist.
 
 ## Score range
 
 The score ranges from 0 to 100.
 
-Labels:
+Bulk labels:
 
 | Score | Label | Meaning |
 |---:|---|---|
-| 80–100 | Ready | Basic DNS/authentication setup looks ready. |
-| 50–79 | Needs attention | Some important records exist, but issues need fixing. |
-| 0–49 | Not ready | Important email authentication records are missing or broken. |
+| 80–100 | Ready | Automated DNS authentication signals look ready for the next manual review step. |
+| 50–79 | Needs work | Some important records exist, but issues need fixing or manual confirmation. |
+| 0–49 | Not ready | Important email authentication records are missing, broken or inconclusive. |
 
-## Initial MVP weights
+## DNS Authentication Score
 
 | Item | Weight |
 |---|---:|
-| MX exists | 15 |
 | SPF exists and single | 20 |
 | SPF lookup count valid | 15 |
-| DMARC exists | 25 |
+| DKIM found for selected/common selector | 25 |
+| DMARC exists | 20 |
 | DMARC policy quality | 10 |
-| Gmail/Yahoo basic readiness | 15 |
-| DKIM | 0 in MVP |
+| MX exists | 10 |
 
-Total MVP score: 100
+Total automated score: 100.
+
+Manual checks such as one-click unsubscribe, spam rate, From alignment and message formatting must not be scored as verified automatically.
 
 ## DMARC policy quality
 
 Suggested policy scoring:
 
-| Policy | Points |
-|---|---:|
-| `p=reject` | 10 |
-| `p=quarantine` | 8 |
-| `p=none` | 5 |
-| missing/invalid | 0 |
+| Policy | Points | Meaning |
+|---|---:|---|
+| `p=reject` | 10 | Strong enforcement. |
+| `p=quarantine` | 8 | Enforcement enabled. |
+| `p=none` | 5 | Minimum/monitoring mode, weak enforcement. |
+| missing/invalid | 0 | Not ready. |
+
+`p=none` must not be described as absolute non-compliance with Gmail minimum bulk sender requirements. It is acceptable as a minimum monitoring policy, but weaker than quarantine or reject.
+
+## DKIM scoring
+
+| Condition | Points | Meaning |
+|---|---:|---|
+| DKIM found for selected ESP selector | 25 | Strong selector-based signal. |
+| DKIM found for common selector | 20 | Good signal, but selector source should be shown. |
+| Selector not found, ESP selected | 8 | Warning; possible false negative. |
+| No selector and ESP unknown | 10 | Unknown; not automatically verified. |
+| DNS error | 5 | Inconclusive. |
+| Malformed DKIM | 0 | Broken. |
 
 ## SPF lookup count scoring
 
@@ -54,14 +68,30 @@ Suggested policy scoring:
 | 11+ | Error | 0 |
 | Unknown | Warning | 5 |
 
-## Gmail/Yahoo readiness scoring
+## Bulk Readiness Checklist
 
-| Condition | Status | Points |
-|---|---|---:|
-| SPF present, DMARC present, SPF lookup count <= 10 | Ready/basic | 15 |
-| SPF present, DMARC present, but weak DMARC or lookup warning | Partial | 8 |
-| DMARC missing | Not ready for bulk sender requirements | 0 |
-| SPF missing and DKIM not checked | Not ready | 0 |
+The bulk readiness checklist is not a mathematical score. It should use explicit item states:
+
+- `pass`;
+- `warning`;
+- `missing`;
+- `manual_check`;
+- `not_checked`.
+
+Initial Gmail/Yahoo checklist items:
+
+| Item | Source |
+|---|---|
+| SPF configured | automated |
+| DKIM configured | automated/selector-based |
+| DMARC configured | automated |
+| DMARC policy visible | automated |
+| From alignment | manual or future header analyzer |
+| One-click unsubscribe | manual |
+| Spam rate under provider threshold | manual via Postmaster/provider tools |
+| Message formatting | manual/future header analyzer |
+| PTR / forward-reverse DNS | future / not MVP |
+| TLS | future / not MVP |
 
 ## Ready blockers
 
@@ -70,7 +100,8 @@ A domain must not receive the `Ready` label if any of these are true:
 - DMARC is missing.
 - SPF has multiple records.
 - SPF lookup count is above 10.
-- SPF is missing and DKIM is not checked.
+- SPF is missing and DKIM is missing or unknown.
+- DKIM is malformed.
 - DNS errors prevent checking core records.
 
 Optional blocker depending on page context:
@@ -81,20 +112,21 @@ Optional blocker depending on page context:
 
 Use this disclaimer near the score:
 
-> This score is based on public DNS records and basic sender-readiness checks. It does not guarantee inbox placement, reputation, spam-folder avoidance or provider-specific acceptance.
+> This score is based on public DNS records and automated bulk sender readiness signals. Manual requirements still need review. It does not guarantee inbox placement, reputation, spam-folder avoidance, campaign performance or provider acceptance.
 
 ## Visual display
 
 Recommended UI pattern:
 
 ~~~text
-72/100 — Needs attention
+72/100 - Needs work
 
 SPF: OK
 DMARC: Missing
+DKIM: Selector not found
 MX: OK
 SPF lookups: OK
-Gmail/Yahoo readiness: Partial
+Manual checks: Review one-click unsubscribe and spam rate
 
 Fix first: Add a DMARC record.
 ~~~
@@ -114,3 +146,4 @@ Use language like:
 - “Needs attention.”
 - “This may affect authentication.”
 - “This does not guarantee inbox placement.”
+- “This manual requirement cannot be verified from DNS.”

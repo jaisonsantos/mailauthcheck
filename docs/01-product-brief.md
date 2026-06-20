@@ -2,33 +2,33 @@
 
 ## Problem
 
-Many domain owners do not know whether their email authentication DNS records are configured correctly.
+Many marketers, e-commerce operators and domain owners do not know whether their email authentication setup is ready for bulk sending to Gmail and Yahoo.
 
 They often discover the problem only after:
 
-- business emails go to spam;
-- customers do not receive quotes or invoices;
 - email campaigns perform badly;
-- Google Workspace or Microsoft 365 setup feels incomplete;
-- Mailchimp, Brevo, SendGrid, or another sender asks for DNS changes.
+- Mailchimp, Brevo, Klaviyo, SendGrid, Resend or another ESP asks for DNS changes;
+- Gmail/Yahoo bulk sender requirements become urgent before a campaign;
+- Google Postmaster Tools or provider dashboards show warnings they do not understand.
 
-Most existing tools are technical and fragmented. Users often need to check SPF, DMARC, MX and lookup count separately, then interpret the result themselves.
+Most existing tools are technical and fragmented. Users often need to check SPF, DKIM, DMARC, MX and lookup count separately, then understand which bulk-sender requirements are automatic DNS checks and which must be verified manually.
 
 ## Persona
 
-### Primary persona: non-technical domain owner
+### Primary persona: marketer/e-commerce operator
 
-- Owns a business domain.
-- Uses Google Workspace, Microsoft 365, or an email marketing tool.
+- Uses Mailchimp, Brevo, Klaviyo, SendGrid or a similar ESP.
+- Sends newsletters, campaigns or automations.
 - Does not understand DNS deeply.
-- Wants to know what is wrong and what to send to a developer or provider.
+- Needs to know whether the domain is ready before sending to Gmail/Yahoo recipients.
+- Wants concrete next steps.
 
 ### Secondary persona: freelancer or agency
 
 - Configures domains for clients.
 - Needs a quick validation tool.
 - Wants a clear report to show clients.
-- May later pay for monitoring or agency workflows if demand is proven.
+- May use the tool repeatedly across clients.
 
 ### Technical persona: developer/founder
 
@@ -42,49 +42,49 @@ The main pain is not “I need a DNS checker”.
 
 The real pain is:
 
-> My emails may not be trusted, and I do not know what to fix.
+> I am about to send bulk email, and I do not know whether Gmail/Yahoo will trust my domain setup.
 
 ## Central user question
 
-> Is my domain ready to send email?
+> Is my domain ready for bulk email sending to Gmail and Yahoo?
 
 ## More commercial variation
 
-> Why are my business emails going to spam?
+> Will my campaign meet Gmail/Yahoo bulk sender requirements?
 
 ## Positioning
 
-MailAuthCheck is a free email domain authentication checker for small businesses, agencies, developers and domain owners.
+MailAuthCheck is a free bulk email readiness checker for marketers, e-commerce operators, agencies, developers and domain owners.
 
-It gives a simple, immediate report about SPF, DMARC, MX, SPF DNS lookup count and basic Gmail/Yahoo sender readiness.
+It gives a simple, immediate report about SPF, DKIM selector signals, DMARC, MX, SPF DNS lookup count, Gmail/Yahoo bulk sender readiness and manual requirements such as one-click unsubscribe and spam-rate monitoring.
 
 ## Homepage headline
 
-Check if your domain is ready to send email
+Bulk Email Readiness Checker
 
 ## Homepage subheadline
 
-Run a quick SPF, DMARC, MX and Gmail/Yahoo readiness check. Get a simple explanation of what is missing and what to fix next.
+Check if your domain meets the basic Gmail and Yahoo bulk sender requirements before your next campaign. Review SPF, DKIM, DMARC, MX, SPF lookups and manual checks like one-click unsubscribe and spam-rate monitoring.
 
 ## Main promise
 
-Understand your domain’s email authentication setup in less than a minute.
+Understand the automated DNS signals and manual checks that matter before bulk sending.
 
 ## CTA
 
-Check my domain
+Check bulk readiness
 
 ## Disclaimer
 
-This check does not guarantee inbox placement. It only verifies public DNS and basic sender-readiness signals.
+This tool checks public DNS records and known bulk sender readiness signals. It does not guarantee inbox placement, campaign performance, sender reputation or provider acceptance.
 
 ## Short description
 
-MailAuthCheck is a free domain email authentication checker for SPF, DMARC, MX and sender readiness.
+MailAuthCheck is a free bulk email readiness checker for SPF, DKIM, DMARC, MX, SPF lookup count and Gmail/Yahoo sender requirements.
 
 ## Long description
 
-MailAuthCheck helps domain owners, small businesses, agencies and developers quickly understand whether a domain has the basic DNS records needed to send email reliably. Enter a domain and get a simple report covering SPF, DMARC, MX records, SPF DNS lookup count and basic Gmail/Yahoo sender-readiness indicators, with plain-English explanations and optional technical details.
+MailAuthCheck helps marketers, e-commerce operators, agencies and developers quickly understand whether a domain has the basic authentication signals expected for bulk email to Gmail and Yahoo. Enter a domain, optionally choose an ESP, and get a simple report covering SPF, DKIM selector signals, DMARC, MX records, SPF DNS lookup count, manual checklist items and plain-English next steps.
 
 ## Product principles
 

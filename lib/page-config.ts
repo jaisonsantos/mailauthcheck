@@ -38,7 +38,7 @@ const homePreview: AggregateResult = {
   score: 78,
   status: "needs_attention",
   summary:
-    "example.com is close to ready, but DMARC policy should be reviewed before treating the domain as fully prepared.",
+    "example.com has several bulk sender basics in place, but DKIM and manual requirements still need review before a campaign.",
   checks: [
     {
       checkName: "SPF",
@@ -53,12 +53,26 @@ const homePreview: AggregateResult = {
       canBeFalsePositive: false,
     },
     {
+      checkName: "DKIM",
+      status: "warning",
+      severity: "medium",
+      summary: "DKIM needs selector confirmation.",
+      technicalDetails:
+        "Common ESP selectors should be checked, but a missing guessed selector can be a false positive.",
+      recommendedFix:
+        "Open your ESP domain authentication page and confirm the exact DKIM selector before changing DNS.",
+      rawRecords: [],
+      references: [],
+      confidence: "low",
+      canBeFalsePositive: true,
+    },
+    {
       checkName: "DMARC",
       status: "warning",
       severity: "medium",
       summary: "DMARC is present, but policy is monitoring only.",
       technicalDetails:
-        "Policy p=none does not ask receivers to quarantine or reject failing mail.",
+        "Policy p=none is minimum/monitoring mode. It does not ask receivers to quarantine or reject failing mail.",
       recommendedFix:
         "Use p=none to monitor first. Move to quarantine or reject only after confirming legitimate senders pass authentication.",
       rawRecords: ["v=DMARC1; p=none; rua=mailto:dmarc@example.com"],
@@ -94,11 +108,11 @@ const homePreview: AggregateResult = {
       checkName: "Gmail/Yahoo Readiness",
       status: "warning",
       severity: "medium",
-      summary: "Basic readiness is partial.",
+      summary: "Bulk readiness needs work.",
       technicalDetails:
-        "The core records exist, but DMARC policy or SPF lookup count still needs attention.",
+        "Automated DNS signals are only part of bulk readiness. One-click unsubscribe, spam rate and alignment still need manual review.",
       recommendedFix:
-        "Strengthen DMARC policy or reduce SPF lookup count before calling the domain fully ready.",
+        "Confirm DKIM, review one-click unsubscribe in your ESP and check spam rate in Postmaster/provider tools.",
       rawRecords: [],
       references: [],
       confidence: "high",
@@ -106,12 +120,12 @@ const homePreview: AggregateResult = {
     },
   ],
   nextSteps: [
-    "Review the DMARC policy and decide whether p=none is enough for your current sending setup.",
+    "Confirm DKIM in your ESP domain authentication screen before your next campaign.",
     "Keep exactly one SPF record and avoid adding duplicate SPF TXT records.",
-    "Send the technical details to your developer or DNS provider before changing records.",
+    "Review one-click unsubscribe and spam-rate monitoring outside DNS.",
   ],
   disclaimer:
-    "This is a DNS/authentication check and does not guarantee inbox placement.",
+    "This tool checks public DNS records and known bulk sender readiness signals. It does not guarantee inbox placement, campaign performance, sender reputation or provider acceptance.",
 };
 
 const spfPreview: AggregateResult = {
@@ -179,56 +193,56 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
   home: {
     pathname: "/",
     apiPath: "/api/check-domain",
-    title: "Free Email Domain Health Check",
+    title: "Bulk Email Readiness Checker",
     description:
-      "Check SPF, DMARC, MX and basic sender readiness for your domain.",
-    h1: "Check if your domain is ready to send email",
-    eyebrow: "Free email domain authentication checker",
-    buttonLabel: "Check my domain",
+      "Check SPF, DKIM, DMARC, MX, SPF lookups and manual Gmail/Yahoo bulk sender requirements.",
+    h1: "Bulk Email Readiness Checker",
+    eyebrow: "Gmail/Yahoo bulk sender readiness",
+    buttonLabel: "Check bulk readiness",
     intro:
-      "Run a quick SPF, DMARC, MX and Gmail/Yahoo readiness check. Get a simple explanation of what is missing and what to fix next.",
+      "Check if your domain meets the basic Gmail and Yahoo bulk sender requirements before your next campaign. Review SPF, DKIM, DMARC, MX, SPF lookups and manual checks like one-click unsubscribe and spam-rate monitoring.",
     previewSummary:
-      "Run the checker to see SPF, DMARC, MX, SPF lookup count and basic Gmail/Yahoo readiness in one place.",
-    resultsHeading: "One scan, five basic readiness signals",
-    resultsIntro: "Review the combined check first, then inspect individual cards and raw DNS records.",
+      "Run the checker to see automated DNS signals and manual bulk sender checks in one place.",
+    resultsHeading: "Automated DNS signals plus manual bulk checks",
+    resultsIntro: "Review the combined check first, then inspect individual cards, confidence and raw DNS records.",
     placeholderResult: homePreview,
     guidePreviews: [
       {
-        title: "Google Workspace setup guide",
+        title: "Mailchimp Gmail compliance guide",
         summary:
-          "Planned next: a clear SPF, DKIM and DMARC checklist for common Google Workspace setups.",
+          "Planned next: a campaign-focused SPF, DKIM and DMARC checklist for Mailchimp senders.",
       },
       {
-        title: "Microsoft 365 setup guide",
+        title: "Google Postmaster Tools guide",
         summary:
-          "Planned next: a practical domain-authentication guide for Microsoft 365 sender setup.",
+          "Planned next: a practical guide to reviewing spam rate and compliance status outside DNS.",
       },
       {
-        title: "Mailchimp setup guide",
+        title: "One-click unsubscribe explainer",
         summary:
-          "Planned next: a focused walkthrough for SPF, DKIM and DMARC around Mailchimp sending domains.",
+          "Planned next: a plain-English guide to what can and cannot be checked from DNS.",
       },
     ],
     faqs: [
       {
-        question: "What is SPF?",
+        question: "What is a bulk sender?",
         answer:
-          "SPF is a DNS TXT record that lists which servers are allowed to send email for your domain.",
+          "For Gmail, a bulk sender is a sender that sends about 5,000 or more messages to personal Gmail accounts in a 24-hour period.",
       },
       {
-        question: "What is DMARC?",
+        question: "Is DMARC p=none enough?",
         answer:
-          "DMARC is a DNS policy that tells receivers how to handle mail that fails authentication checks.",
+          "p=none is minimum/monitoring mode for bulk sender requirements, but it does not enforce quarantine or rejection.",
       },
       {
         question: "Does this guarantee inbox placement?",
         answer:
-          "No. MailAuthCheck only checks public DNS authentication signals and basic sender-readiness indicators.",
+          "No. MailAuthCheck checks public DNS and known readiness signals, but it cannot guarantee inbox placement or campaign performance.",
       },
       {
-        question: "What does Gmail/Yahoo readiness mean?",
+        question: "What cannot be checked from DNS?",
         answer:
-          "It is a basic signal that SPF, DMARC and related sender checks are present. It is not a deliverability guarantee.",
+          "One-click unsubscribe, spam rate, From alignment and message formatting usually need ESP settings, message headers or Postmaster/provider tools.",
       },
     ],
     relatedTools: [

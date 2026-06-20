@@ -10,7 +10,7 @@ MailAuthCheck should first prove that users search, scan, understand, and ask fo
 
 | Option | When to consider | Difficulty | First version | Risk |
 |---|---|---:|---|---|
-| Assisted setup | From day 1 | Low | Simple CTA/form | Manual support burden |
+| Assisted setup | From day 1 | Low | SPF/DKIM/DMARC setup CTA/form | Manual support burden |
 | Email capture | From day 1 | Low | Waitlist/checklist form | Low conversion |
 | Affiliates | After traffic appears | Medium | Links in provider guides | May look spammy |
 | Ads | After meaningful traffic | Low/medium | Minimal ad placement | Can hurt UX |
@@ -35,6 +35,7 @@ Form fields:
 - email;
 - domain;
 - issue summary;
+- selected ESP;
 - optional message.
 
 ### Risk
@@ -58,6 +59,8 @@ Options:
 - “Send me the checklist.”
 - “Notify me when monitoring is available.”
 - “Send this report to my developer.”
+- “Prepare my domain for Gmail bulk sender requirements.”
+- “Configure SPF/DKIM/DMARC for Mailchimp.”
 
 ### Risk
 
@@ -142,6 +145,8 @@ This is the path to SaaS complexity. Do not start here.
 ## CTA examples
 
 - Need help fixing this?
+- Prepare my domain for Gmail bulk sender requirements.
+- Configure SPF/DKIM/DMARC for my ESP.
 - Want us to monitor this domain?
 - Get a human-readable report.
 - Send this report to your developer.
@@ -151,7 +156,7 @@ This is the path to SaaS complexity. Do not start here.
 
 The first real money signal is:
 
-> A user submits a domain and asks for help fixing SPF, DMARC, MX, or sender readiness.
+> A user submits a domain and asks for help fixing SPF, DKIM, DMARC, MX, or bulk sender readiness before a campaign.
 
 Not a scan. Not a page view. Not a compliment.
 

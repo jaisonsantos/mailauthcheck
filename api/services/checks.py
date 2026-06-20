@@ -409,7 +409,7 @@ def build_dmarc_check(domain: str) -> CheckResult:
             status="warning",
             severity="medium",
             summary="DMARC is present, but policy is monitoring only.",
-            technical_details="Policy p=none does not ask receivers to quarantine or reject failing mail.",
+            technical_details="Policy p=none is minimum/monitoring mode. It does not ask receivers to quarantine or reject failing mail.",
             recommended_fix="Use p=none to monitor first. Move to quarantine or reject only after confirming legitimate senders pass authentication.",
             raw_records=[dmarc_record],
             confidence="high",

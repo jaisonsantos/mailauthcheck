@@ -4,7 +4,7 @@
 
 This document defines the standard result model for MailAuthCheck.
 
-The goal is to make all checks render consistently in the frontend.
+The goal is to make automated DNS checks, manual checks and bulk sender checklist items render consistently in the frontend.
 
 ## Check schema
 
@@ -33,12 +33,20 @@ The goal is to make all checks render consistently in the frontend.
 ~~~json
 {
   "domain": "example.com",
+  "mode": "bulk_sender",
+  "espProvider": "mailchimp",
   "score": 72,
-  "status": "needs_attention",
-  "summary": "Your domain has SPF and MX records, but DMARC is missing.",
+  "dnsAuthenticationScore": 72,
+  "status": "needs_work",
+  "bulkStatus": "needs_work",
+  "summary": "Your domain has SPF and MX records, but DKIM or DMARC needs attention before bulk sending.",
   "checks": [],
+  "automatedChecks": [],
+  "manualChecks": [],
+  "gmailBulkChecklist": [],
+  "yahooBulkChecklist": [],
   "nextSteps": [],
-  "disclaimer": "This is a DNS/authentication check and does not guarantee inbox placement."
+  "disclaimer": "This tool checks public DNS records and known bulk sender readiness signals. It does not guarantee inbox placement, campaign performance, sender reputation or provider acceptance."
 }
 ~~~
 
@@ -47,7 +55,7 @@ The goal is to make all checks render consistently in the frontend.
 | Field | Rule |
 |---|---|
 | `checkName` | Human-readable check name. |
-| `status` | One of `ok`, `warning`, `missing`, `error`. |
+| `status` | One of `ok`, `warning`, `missing`, `manual_check`, `unknown`, `error`. |
 | `severity` | One of `info`, `low`, `medium`, `high`. |
 | `summary` | Short plain-English result. |
 | `technicalDetails` | Optional technical explanation. |
@@ -56,6 +64,48 @@ The goal is to make all checks render consistently in the frontend.
 | `references` | Optional external references. |
 | `confidence` | One of `high`, `medium`, `low`. |
 | `canBeFalsePositive` | Boolean warning for uncertain checks. |
+
+## Bulk-specific conceptual types
+
+### ManualCheckResult
+
+~~~json
+{
+  "checkName": "One-click unsubscribe",
+  "status": "manual_check",
+  "summary": "This cannot be verified from DNS.",
+  "whyItMatters": "Marketing and subscribed bulk messages need a clear unsubscribe path.",
+  "howToVerify": "Check the ESP campaign settings and message headers for List-Unsubscribe and one-click unsubscribe support.",
+  "references": []
+}
+~~~
+
+### BulkComplianceItem
+
+~~~json
+{
+  "item": "DMARC configured",
+  "provider": "gmail",
+  "required": true,
+  "status": "ok",
+  "automated": true,
+  "explanation": "A DMARC record exists at _dmarc.example.com.",
+  "howToVerify": null,
+  "sourceUrl": "https://support.google.com/mail/answer/81126?hl=en"
+}
+~~~
+
+### ESPProvider
+
+~~~json
+{
+  "id": "mailchimp",
+  "name": "Mailchimp",
+  "commonDkimSelectors": ["k1", "k2", "mandrill"],
+  "setupGuideUrl": null,
+  "internalGuidePath": "/guides/mailchimp-gmail-compliance"
+}
+~~~
 
 ## Confidence rule
 
@@ -173,12 +223,29 @@ Set `canBeFalsePositive` to `false` when:
   "status": "warning",
   "severity": "medium",
   "summary": "DMARC is present, but policy is monitoring only.",
-  "technicalDetails": "Policy p=none does not ask receivers to quarantine or reject failing mail.",
+  "technicalDetails": "Policy p=none is minimum/monitoring mode. It does not ask receivers to quarantine or reject failing mail.",
   "recommendedFix": "Use p=none to monitor first. Move to quarantine or reject only after confirming legitimate senders pass authentication.",
   "rawRecords": ["v=DMARC1; p=none; rua=mailto:dmarc@example.com"],
   "references": [],
   "confidence": "high",
   "canBeFalsePositive": false
+}
+~~~
+
+### DKIM selector not found
+
+~~~json
+{
+  "checkName": "DKIM",
+  "status": "warning",
+  "severity": "medium",
+  "summary": "DKIM was not found using common selectors for this ESP.",
+  "technicalDetails": "We did not find DKIM using common selectors for this ESP. This does not always mean DKIM is missing.",
+  "recommendedFix": "Check your ESP's domain authentication page for the exact DKIM selector.",
+  "rawRecords": [],
+  "references": [],
+  "confidence": "low",
+  "canBeFalsePositive": true
 }
 ~~~
 

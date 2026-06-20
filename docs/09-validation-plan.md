@@ -13,7 +13,7 @@ The goal is to learn whether users:
 - understand the result;
 - click CTAs;
 - leave email;
-- ask for help fixing their domain.
+- ask for help preparing SPF/DKIM/DMARC for a campaign or ESP.
 
 ## Days 1–3
 
@@ -21,10 +21,12 @@ The goal is to learn whether users:
 
 - Main domain scanner.
 - SPF check.
+- DKIM selector signal.
 - DMARC check.
 - MX check.
 - SPF lookup count.
-- Basic Gmail/Yahoo readiness.
+- Gmail/Yahoo bulk sender readiness.
+- Manual checks for one-click unsubscribe and spam-rate review.
 - Score and label.
 - Basic result UI.
 - Next steps.
@@ -35,7 +37,9 @@ The goal is to learn whether users:
 ### Metrics to prepare
 
 - scans performed;
+- scans with ESP selected;
 - unique domains tested;
+- percentage of scans with DKIM warning/unknown;
 - score bucket;
 - failed checks;
 - CTA clicks;
@@ -47,10 +51,10 @@ The goal is to learn whether users:
 ### Publish pages
 
 - `/`
-- `/spf-checker`
-- `/dmarc-checker`
-- `/mx-record-checker`
-- `/spf-lookup-counter`
+- `/bulk-email-readiness-checker`
+- `/gmail-bulk-sender-requirements`
+- `/dmarc-policy-bulk-email`
+- `/guides/mailchimp-gmail-compliance`
 
 ### Additional deliverables
 
@@ -66,12 +70,11 @@ The goal is to learn whether users:
 
 ### Improvements
 
-- Add `/gmail-yahoo-sender-requirements-checker` if core checks are stable.
-- Add `/dkim-selector-checker` if selector-based scope is clear.
+- Improve DKIM selector coverage if confidence language is clear.
 - Add “Copy technical report”.
 - Improve error messages.
-- Add provider-specific hints.
-- Draft Google Workspace and Microsoft 365 guides.
+- Add provider-specific next steps.
+- Draft Brevo, Klaviyo, SendGrid and Postmaster Tools guides.
 
 ### Validation activity
 
@@ -103,6 +106,8 @@ Track:
 - emails captured;
 - CTA clicks;
 - setup requests;
+- clicks on ESP-specific guides;
+- clicks on Postmaster Tools references;
 - time on page;
 - returning users.
 
@@ -128,6 +133,7 @@ Continue if at least two of these happen in the first 30 days:
 - 100+ real scans.
 - 5+ email captures.
 - 1+ assisted setup request.
+- 1 person asks about price for SPF/DKIM/DMARC setup.
 - Search Console impressions are growing.
 - Someone shares or recommends the tool without being asked.
 - Users say the result is clearer than existing tools.
