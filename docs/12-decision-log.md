@@ -15,6 +15,7 @@ Every scope or architecture change should be added here.
 | 2026-06-19 | Use CTA for assisted setup. | Setup requests are the first likely commercial signal. | Adds lightweight monetization without building SaaS. | Accepted |
 | 2026-06-19 | Do not implement login, dashboard or Stripe in MVP. | These features create SaaS complexity before validation. | Protects scope and keeps launch small. | Accepted |
 | 2026-06-20 | Keep MVP executable code at repository root for now. | The current codebase is still small, and a monorepo `apps/` split would add structure before it reduces complexity. | Frontend lives in root `app/`; backend skeleton lives in root `api/` until growth justifies a move. | Accepted |
+| 2026-06-20 | Use in-memory fixed-window protections for MVP runtime. | The utility needs basic abuse protection and repeat-scan efficiency without adding Redis, a database or queueing infrastructure. | MVP uses 15-minute TTL cache, basic IP/domain rate limits and JSON API logs in-process. | Accepted |
 
 ## Pending decisions
 

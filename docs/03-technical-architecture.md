@@ -85,10 +85,10 @@ For validation, use:
 
 Use simple in-memory TTL cache for repeated domain scans.
 
-Suggested TTL:
+Current MVP implementation target:
 
-- 10 to 60 minutes for full domain scan results;
-- shorter TTL during development;
+- 15-minute TTL for repeated scans;
+- endpoint-specific cache keys such as `aggregate:example.com` and `/api/spf:example.com`;
 - no long-term persistence.
 
 Cache key examples:
@@ -101,11 +101,11 @@ Cache key examples:
 
 Use basic rate limiting to avoid abuse.
 
-Possible limits:
+Current MVP implementation target:
 
-- requests per IP per minute;
-- requests per IP per hour;
-- repeated scans for same domain served from cache.
+- 30 requests per IP per minute;
+- 10 repeated checks per IP+domain per minute;
+- repeated scans should usually be served from cache before they become expensive.
 
 Rate limit response:
 
@@ -128,6 +128,12 @@ Useful fields:
 - endpoint;
 - error category;
 - CTA clicked, if applicable.
+
+Current MVP implementation target:
+
+- log one structured event per API request completion or rejection;
+- hash domains before logging;
+- include cache-hit information and latency in milliseconds.
 
 Avoid logging:
 

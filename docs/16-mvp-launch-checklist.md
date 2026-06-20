@@ -31,9 +31,9 @@ It should be used after specific implementation tasks exist. It does not authori
 - [x] SPF lookup count is estimated.
 - [ ] DNS timeout is handled.
 - [ ] DNS error is handled.
-- [ ] Basic rate limiting exists.
-- [ ] In-memory TTL cache exists.
-- [ ] JSON logs exist.
+- [x] Basic rate limiting exists.
+- [x] In-memory TTL cache exists.
+- [x] JSON logs exist.
 - [x] Errors are friendly and actionable.
 - [x] No database is required.
 - [x] No authentication is required.
