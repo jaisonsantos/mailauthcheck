@@ -29,8 +29,8 @@ It should be used after specific implementation tasks exist. It does not authori
 - [x] DMARC policy is detected.
 - [x] MX check works.
 - [x] SPF lookup count is estimated.
-- [ ] DNS timeout is handled.
-- [ ] DNS error is handled.
+- [x] DNS timeout is handled.
+- [x] DNS error is handled.
 - [x] Basic rate limiting exists.
 - [x] In-memory TTL cache exists.
 - [x] JSON logs exist.
@@ -84,9 +84,9 @@ It should be used after specific implementation tasks exist. It does not authori
 - [x] Test with real domains that have valid SPF, DMARC and MX.
 - [x] Test with a domain without SPF.
 - [x] Test with a domain without DMARC.
-- [ ] Test with a domain with multiple SPF records.
-- [ ] Test with a domain near or above SPF lookup limits.
-- [ ] Test timeout or DNS error handling.
+- [x] Test with a domain with multiple SPF records.
+- [x] Test with a domain near or above SPF lookup limits.
+- [x] Test timeout or DNS error handling.
 - [ ] Test mobile layout.
 - [ ] Test desktop layout.
 - [x] Test SEO metadata in production build.
