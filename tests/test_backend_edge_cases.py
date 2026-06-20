@@ -70,6 +70,38 @@ class BackendEdgeCaseTests(unittest.TestCase):
         self.assertEqual(spf_check.summary, "Multiple SPF records found.")
         self.assertEqual(len(spf_records), 2)
 
+    def test_dkim_found_for_common_esp_selector(self) -> None:
+        def fake_resolve_txt(host: str) -> DNSQueryResult:
+            if host == "k1._domainkey.example.com":
+                return DNSQueryResult(
+                    status="ok",
+                    values=["v=DKIM1; k=rsa; p=abc123"],
+                )
+            return DNSQueryResult(status="no_answer", values=[])
+
+        with patch.object(checks, "resolve_txt", side_effect=fake_resolve_txt):
+            dkim_check = checks.build_dkim_check("example.com", "mailchimp")
+
+        self.assertEqual(dkim_check.status, "ok")
+        self.assertEqual(dkim_check.confidence, "medium")
+        self.assertEqual(dkim_check.rawRecords, ["v=DKIM1; k=rsa; p=abc123"])
+
+    def test_dkim_not_found_for_common_selectors_is_warning_not_error(self) -> None:
+        with patch.object(
+            checks,
+            "resolve_txt",
+            return_value=DNSQueryResult(status="no_answer", values=[]),
+        ):
+            dkim_check = checks.build_dkim_check("example.com", "mailchimp")
+
+        self.assertEqual(dkim_check.status, "warning")
+        self.assertEqual(dkim_check.confidence, "low")
+        self.assertTrue(dkim_check.canBeFalsePositive)
+        self.assertIn(
+            "We did not find DKIM using common selectors for this ESP.",
+            dkim_check.technicalDetails or "",
+        )
+
     def test_spf_lookup_limit_above_ten_returns_error(self) -> None:
         spf_record = "v=spf1 " + " ".join(
             f"include:sender{i}.example.net" for i in range(1, 12)
@@ -113,6 +145,29 @@ class BackendEdgeCaseTests(unittest.TestCase):
 
         self.assertEqual(aggregate.status, "error")
         self.assertIn("could not be fully checked", aggregate.summary)
+
+    def test_aggregate_result_includes_manual_bulk_checks(self) -> None:
+        with patch.object(
+            checks,
+            "resolve_txt",
+            return_value=DNSQueryResult(status="no_answer", values=[]),
+        ), patch.object(
+            checks,
+            "resolve_mx",
+            return_value=DNSQueryResult(
+                status="ok",
+                values=["10 mail.example.com"],
+            ),
+        ):
+            aggregate = checks.build_aggregate_result("example.com", "mailchimp")
+
+        self.assertEqual(aggregate.mode, "bulk_sender")
+        self.assertEqual(aggregate.espProvider, "mailchimp")
+        self.assertTrue(aggregate.manualChecks)
+        self.assertTrue(aggregate.gmailBulkChecklist)
+        self.assertTrue(
+            any(item.status == "manual_check" for item in aggregate.gmailBulkChecklist)
+        )
 
 
 if __name__ == "__main__":

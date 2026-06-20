@@ -280,6 +280,8 @@ h3 {
 }
 
 .results-band,
+.manual-band,
+.checklist-band,
 .next-steps,
 .help-band,
 .faq-band,
@@ -312,7 +314,14 @@ h3 {
   gap: 14px;
 }
 
-.check-card {
+.manual-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.check-card,
+.manual-card {
   min-height: 260px;
   display: flex;
   flex-direction: column;
@@ -329,7 +338,8 @@ h3 {
   border-top: 5px solid var(--yellow);
 }
 
-.check-card.error {
+.check-card.error,
+.manual-card {
   border-top: 5px solid var(--red);
 }
 
@@ -364,7 +374,8 @@ h3 {
   font-weight: 800;
 }
 
-.check-card p {
+.check-card p,
+.manual-card p {
   color: var(--muted);
   line-height: 1.55;
 }
@@ -380,6 +391,62 @@ h3 {
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 0.8rem;
   line-height: 1.45;
+}
+
+.manual-band,
+.checklist-band {
+  background: #ffffff;
+  border-top: 1px solid var(--line);
+}
+
+.checklist-list {
+  display: grid;
+  gap: 12px;
+}
+
+.checklist-list article {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: 18px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.checklist-list h3 {
+  margin: 0 0 6px;
+}
+
+.checklist-list p {
+  margin: 0 0 4px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.checklist-status {
+  display: inline-flex;
+  justify-content: center;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+}
+
+.checklist-status.ok {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.checklist-status.warn {
+  color: #92400e;
+  background: var(--yellow-soft);
+}
+
+.checklist-status.error {
+  color: var(--red);
+  background: var(--red-soft);
 }
 
 .next-steps {
@@ -593,6 +660,7 @@ h3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .manual-grid,
   .guides-grid,
   .faq-list {
     grid-template-columns: 1fr;
@@ -633,7 +701,12 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .checklist-list article {
+    grid-template-columns: 1fr;
+  }
+
   .check-card,
+  .manual-card,
   .faq-list article {
     min-height: auto;
   }

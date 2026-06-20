@@ -2,15 +2,48 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from api.models import AggregateResult, CheckListResponse, CheckResult
+from api.models import (
+    AggregateResult,
+    BulkComplianceItem,
+    CheckListResponse,
+    CheckResult,
+    ManualCheckResult,
+)
 from api.services.dns_resolver import DNSQueryResult, resolve_mx, resolve_txt
 
 
 DISCLAIMER = (
-    "This is a DNS/authentication check and does not guarantee inbox placement."
+    "This tool checks public DNS records and known bulk sender readiness signals. "
+    "It does not guarantee inbox placement, campaign performance, sender reputation "
+    "or provider acceptance."
 )
 
 SPF_LOOKUP_MECHANISMS = ("include:", "a", "mx", "ptr", "exists:", "redirect=")
+GMAIL_SENDER_GUIDELINES_URL = "https://support.google.com/mail/answer/81126?hl=en"
+GMAIL_SENDER_FAQ_URL = "https://support.google.com/mail/answer/14229414?hl=en"
+YAHOO_SENDER_GUIDELINES_URL = "https://senders.yahooinc.com/best-practices/"
+
+COMMON_DKIM_SELECTORS_BY_ESP: dict[str, tuple[str, ...]] = {
+    "mailchimp": ("k1", "k2", "mandrill"),
+    "brevo": ("mail", "brevo", "sib1", "sib2"),
+    "klaviyo": ("kl", "klaviyo", "s1", "s2"),
+    "sendgrid": ("s1", "s2"),
+    "mailgun": ("smtp", "mailo", "k1"),
+    "resend": ("resend", "s1", "s2"),
+    "amazon_ses": ("amazonses", "selector1", "selector2"),
+    "hubspot": ("hs1", "hs2", "hubspot"),
+}
+
+DEFAULT_DKIM_SELECTORS = (
+    "default",
+    "google",
+    "selector1",
+    "selector2",
+    "s1",
+    "s2",
+    "k1",
+    "k2",
+)
 
 
 @dataclass(slots=True)
@@ -30,6 +63,13 @@ class AggregateComputation:
     status: str
     summary: str
     next_steps: list[str]
+
+
+def normalize_esp_provider(esp_provider: str | None) -> str | None:
+    if not esp_provider:
+        return None
+    normalized = esp_provider.strip().lower().replace("-", "_").replace(" ", "_")
+    return normalized if normalized in COMMON_DKIM_SELECTORS_BY_ESP else None
 
 
 def make_check(
@@ -491,8 +531,80 @@ def build_mx_check(domain: str) -> CheckResult:
     )
 
 
+def build_dkim_check(domain: str, esp_provider: str | None = None) -> CheckResult:
+    normalized_esp = normalize_esp_provider(esp_provider)
+    selectors = COMMON_DKIM_SELECTORS_BY_ESP.get(normalized_esp or "", DEFAULT_DKIM_SELECTORS)
+    raw_records: list[str] = []
+    checked_hosts: list[str] = []
+    had_dns_error = False
+    had_timeout = False
+
+    for selector in selectors:
+        host = f"{selector}._domainkey.{domain}"
+        checked_hosts.append(host)
+        result = resolve_txt(host)
+
+        if result.status == "ok":
+            dkim_records = [
+                record for record in result.values if record.lower().startswith("v=dkim1")
+            ]
+            if dkim_records:
+                raw_records.extend(dkim_records)
+                confidence = "medium" if normalized_esp else "low"
+                return make_check(
+                    check_name="DKIM",
+                    status="ok",
+                    severity="info",
+                    summary="DKIM record found for a common selector.",
+                    technical_details=f"Found DKIM at {host}.",
+                    recommended_fix=None,
+                    raw_records=dkim_records,
+                    confidence=confidence,
+                    can_be_false_positive=not bool(normalized_esp),
+                )
+
+        if result.status == "timeout":
+            had_timeout = True
+        elif result.status == "error":
+            had_dns_error = True
+
+    checked_summary = ", ".join(checked_hosts[:5])
+    if len(checked_hosts) > 5:
+        checked_summary = f"{checked_summary}, ..."
+
+    if had_timeout or had_dns_error:
+        return make_check(
+            check_name="DKIM",
+            status="unknown",
+            severity="medium",
+            summary="DKIM could not be fully checked.",
+            technical_details="DNS did not respond cleanly for one or more DKIM selector checks.",
+            recommended_fix="Check your ESP's domain authentication page for the exact DKIM selector.",
+            raw_records=raw_records,
+            confidence="low",
+            can_be_false_positive=True,
+        )
+
+    return make_check(
+        check_name="DKIM",
+        status="warning",
+        severity="medium",
+        summary="DKIM was not found using common selectors for this ESP.",
+        technical_details=(
+            "We did not find DKIM using common selectors for this ESP. "
+            "This does not always mean DKIM is missing. "
+            f"Checked: {checked_summary}."
+        ),
+        recommended_fix="Check your ESP domain authentication page for the exact selector.",
+        raw_records=[],
+        confidence="low",
+        can_be_false_positive=True,
+    )
+
+
 def build_readiness_check(
     spf_check: CheckResult,
+    dkim_check: CheckResult,
     dmarc_check: CheckResult,
     spf_lookup_check: CheckResult,
 ) -> CheckResult:
@@ -501,9 +613,9 @@ def build_readiness_check(
             check_name="Gmail/Yahoo Readiness",
             status="error",
             severity="high",
-            summary="Basic readiness is not met because DMARC is missing.",
-            technical_details="DMARC is required for basic Gmail/Yahoo bulk sender readiness checks.",
-            recommended_fix="Add a DMARC record before treating the domain as ready to send email at scale.",
+            summary="Bulk readiness is not met because DMARC is missing.",
+            technical_details="DMARC is required for Gmail/Yahoo bulk sender readiness checks.",
+            recommended_fix="Add a DMARC record before treating the domain as ready for bulk sending.",
             raw_records=[],
             confidence="high",
             can_be_false_positive=False,
@@ -514,8 +626,8 @@ def build_readiness_check(
             check_name="Gmail/Yahoo Readiness",
             status="error",
             severity="high",
-            summary="Basic readiness is not met because SPF is missing or broken.",
-            technical_details="SPF must be valid before this domain can be treated as basically ready.",
+            summary="Bulk readiness is not met because SPF is missing or broken.",
+            technical_details="SPF must be valid before this domain can be treated as ready for bulk sending.",
             recommended_fix="Publish one valid SPF record for your legitimate sending providers.",
             raw_records=[],
             confidence="high",
@@ -527,7 +639,7 @@ def build_readiness_check(
             check_name="Gmail/Yahoo Readiness",
             status="error",
             severity="high",
-            summary="Basic readiness is blocked by SPF lookup count issues.",
+            summary="Bulk readiness is blocked by SPF lookup count issues.",
             technical_details="SPF above the 10-lookup limit can cause authentication failures.",
             recommended_fix="Reduce SPF lookup count to 10 or fewer.",
             raw_records=[],
@@ -535,14 +647,27 @@ def build_readiness_check(
             can_be_false_positive=spf_lookup_check.canBeFalsePositive,
         )
 
+    if dkim_check.status in {"warning", "unknown"}:
+        return make_check(
+            check_name="Gmail/Yahoo Readiness",
+            status="warning",
+            severity="medium",
+            summary="Bulk readiness needs DKIM confirmation.",
+            technical_details="Gmail/Yahoo bulk sender checks require DKIM, but selector-based checks can produce false negatives.",
+            recommended_fix="Confirm DKIM in your ESP domain authentication page before bulk sending.",
+            raw_records=[],
+            confidence="low",
+            can_be_false_positive=True,
+        )
+
     if dmarc_check.status == "warning" or spf_lookup_check.status == "warning":
         return make_check(
             check_name="Gmail/Yahoo Readiness",
             status="warning",
             severity="medium",
-            summary="Basic readiness is partial.",
+            summary="Bulk readiness needs work.",
             technical_details="The core records exist, but DMARC policy or SPF lookup count still needs attention.",
-            recommended_fix="Strengthen DMARC policy or reduce SPF lookup count before calling the domain fully ready.",
+            recommended_fix="Review DMARC policy and SPF lookup count before treating the domain as ready for bulk sending.",
             raw_records=[],
             confidence="high",
             can_be_false_positive=spf_lookup_check.canBeFalsePositive,
@@ -552,8 +677,8 @@ def build_readiness_check(
         check_name="Gmail/Yahoo Readiness",
         status="ok",
         severity="info",
-        summary="Basic readiness looks good.",
-        technical_details="SPF and DMARC are present, and SPF lookup count is within the expected range.",
+        summary="Automated bulk readiness signals look good.",
+        technical_details="SPF, DKIM and DMARC are present, and SPF lookup count is within the expected range.",
         recommended_fix=None,
         raw_records=[],
         confidence="high",
@@ -564,14 +689,14 @@ def build_readiness_check(
 def _score_from_checks(
     mx_check: CheckResult,
     spf_check: CheckResult,
+    dkim_check: CheckResult,
     spf_lookup_check: CheckResult,
     dmarc_check: CheckResult,
-    readiness_check: CheckResult,
 ) -> int:
     score = 0
 
     if mx_check.status == "ok":
-        score += 15
+        score += 10
 
     if spf_check.status == "ok":
         score += 20
@@ -583,8 +708,15 @@ def _score_from_checks(
     elif spf_lookup_check.status == "warning":
         score += 8 if not spf_lookup_check.canBeFalsePositive else 5
 
+    if dkim_check.status == "ok":
+        score += 25 if dkim_check.confidence in {"high", "medium"} else 20
+    elif dkim_check.status == "warning":
+        score += 8
+    elif dkim_check.status == "unknown":
+        score += 5
+
     if dmarc_check.status in {"ok", "warning"}:
-        score += 25
+        score += 20
         raw_record = dmarc_check.rawRecords[0] if dmarc_check.rawRecords else ""
         if "p=reject" in raw_record.lower():
             score += 10
@@ -592,11 +724,6 @@ def _score_from_checks(
             score += 8
         elif "p=none" in raw_record.lower():
             score += 5
-
-    if readiness_check.status == "ok":
-        score += 15
-    elif readiness_check.status == "warning":
-        score += 8
 
     return min(score, 100)
 
@@ -612,6 +739,7 @@ def _aggregate_status(score: int, checks: list[CheckResult]) -> str:
     blockers = any(
         check.checkName == "DMARC" and check.status == "missing"
         or check.checkName == "SPF" and check.status == "error"
+        or check.checkName == "DKIM" and check.status in {"missing", "error", "unknown"}
         or check.checkName == "SPF Lookup Count" and check.status == "error"
         or check.checkName == "Gmail/Yahoo Readiness" and check.status == "error"
         or check.checkName == "MX" and check.status != "ok"
@@ -633,7 +761,7 @@ def _summary_from_checks(domain: str, checks: list[CheckResult], status: str) ->
         check.summary
         for check in checks
         if check.status in {"missing", "error", "warning"}
-        and check.checkName in {"SPF", "DMARC", "SPF Lookup Count", "MX"}
+        and check.checkName in {"SPF", "DKIM", "DMARC", "SPF Lookup Count", "MX"}
     ]
 
     if high_priority:
@@ -654,23 +782,170 @@ def _next_steps_from_checks(checks: list[CheckResult]) -> list[str]:
     return list(dict.fromkeys(next_steps))[:3]
 
 
-def build_aggregate_result(domain: str) -> AggregateResult:
+def build_manual_checks() -> list[ManualCheckResult]:
+    return [
+        ManualCheckResult(
+            checkName="One-click unsubscribe",
+            status="manual_check",
+            summary="This cannot be verified from DNS.",
+            whyItMatters="Gmail and Yahoo expect easy unsubscribe support for marketing and subscribed bulk messages.",
+            howToVerify="Check your ESP campaign settings and message headers for List-Unsubscribe and one-click unsubscribe support.",
+            references=[
+                {"label": "Gmail sender guidelines FAQ", "url": GMAIL_SENDER_FAQ_URL},
+                {"label": "Yahoo sender best practices", "url": YAHOO_SENDER_GUIDELINES_URL},
+            ],
+        ),
+        ManualCheckResult(
+            checkName="Spam rate",
+            status="manual_check",
+            summary="Spam rate cannot be estimated from DNS.",
+            whyItMatters="High complaint rates can affect bulk sender compliance and campaign performance.",
+            howToVerify="Review user-reported spam rate in Google Postmaster Tools and your ESP/provider dashboards.",
+            references=[
+                {"label": "Gmail sender guidelines FAQ", "url": GMAIL_SENDER_FAQ_URL},
+                {"label": "Yahoo sender best practices", "url": YAHOO_SENDER_GUIDELINES_URL},
+            ],
+        ),
+        ManualCheckResult(
+            checkName="From alignment",
+            status="manual_check",
+            summary="From alignment needs message-level verification.",
+            whyItMatters="DMARC requires alignment between the From domain and SPF or DKIM authentication domains.",
+            howToVerify="Send a real campaign/test message and inspect authentication results or your ESP domain authentication page.",
+            references=[
+                {"label": "Gmail sender guidelines", "url": GMAIL_SENDER_GUIDELINES_URL},
+                {"label": "Yahoo sender best practices", "url": YAHOO_SENDER_GUIDELINES_URL},
+            ],
+        ),
+    ]
+
+
+def _bulk_status_from_general(status: str) -> str:
+    if status == "ready":
+        return "ready"
+    if status == "needs_attention":
+        return "needs_work"
+    if status == "error":
+        return "incomplete"
+    return "not_ready"
+
+
+def _compliance_status(check: CheckResult) -> str:
+    if check.status == "ok":
+        return "ok"
+    if check.status in {"warning", "unknown"}:
+        return "warning"
+    return check.status
+
+
+def build_bulk_checklist(
+    spf_check: CheckResult,
+    dkim_check: CheckResult,
+    dmarc_check: CheckResult,
+    spf_lookup_check: CheckResult,
+    provider: str,
+) -> list[BulkComplianceItem]:
+    source_url = GMAIL_SENDER_GUIDELINES_URL if provider == "gmail" else YAHOO_SENDER_GUIDELINES_URL
+    return [
+        BulkComplianceItem(
+            item="SPF configured",
+            provider=provider,
+            required=True,
+            status=_compliance_status(spf_check),
+            automated=True,
+            explanation=spf_check.summary,
+            sourceUrl=source_url,
+        ),
+        BulkComplianceItem(
+            item="DKIM configured",
+            provider=provider,
+            required=True,
+            status=_compliance_status(dkim_check),
+            automated=True,
+            explanation=dkim_check.summary,
+            howToVerify="Confirm the exact DKIM selector in your ESP domain authentication page.",
+            sourceUrl=source_url,
+        ),
+        BulkComplianceItem(
+            item="DMARC configured",
+            provider=provider,
+            required=True,
+            status=_compliance_status(dmarc_check),
+            automated=True,
+            explanation=dmarc_check.summary,
+            sourceUrl=source_url,
+        ),
+        BulkComplianceItem(
+            item="SPF lookup count below 10",
+            provider=provider,
+            required=True,
+            status=_compliance_status(spf_lookup_check),
+            automated=True,
+            explanation=spf_lookup_check.summary,
+            sourceUrl=source_url,
+        ),
+        BulkComplianceItem(
+            item="One-click unsubscribe",
+            provider=provider,
+            required=True,
+            status="manual_check",
+            automated=False,
+            explanation="This cannot be verified from DNS.",
+            howToVerify="Check your ESP campaign settings and message headers.",
+            sourceUrl=source_url,
+        ),
+        BulkComplianceItem(
+            item="Spam rate",
+            provider=provider,
+            required=True,
+            status="manual_check",
+            automated=False,
+            explanation="This cannot be estimated from DNS.",
+            howToVerify="Review spam rate in Google Postmaster Tools or provider dashboards.",
+            sourceUrl=source_url,
+        ),
+    ]
+
+
+def build_aggregate_result(domain: str, esp_provider: str | None = None) -> AggregateResult:
     spf_check, spf_records = build_spf_check(domain)
     spf_lookup_check = build_spf_lookup_count_check(spf_records, domain)
+    dkim_check = build_dkim_check(domain, esp_provider)
     dmarc_check = build_dmarc_check(domain)
     mx_check = build_mx_check(domain)
-    readiness_check = build_readiness_check(spf_check, dmarc_check, spf_lookup_check)
+    readiness_check = build_readiness_check(spf_check, dkim_check, dmarc_check, spf_lookup_check)
 
-    checks = [spf_check, dmarc_check, mx_check, spf_lookup_check, readiness_check]
-    score = _score_from_checks(mx_check, spf_check, spf_lookup_check, dmarc_check, readiness_check)
+    checks = [spf_check, dkim_check, dmarc_check, mx_check, spf_lookup_check, readiness_check]
+    score = _score_from_checks(mx_check, spf_check, dkim_check, spf_lookup_check, dmarc_check)
     status = _aggregate_status(score, checks)
+    normalized_esp = normalize_esp_provider(esp_provider)
 
     return AggregateResult(
         domain=domain,
+        mode="bulk_sender",
+        espProvider=normalized_esp,
         score=score,
+        dnsAuthenticationScore=score,
         status=status,
+        bulkStatus=_bulk_status_from_general(status),
         summary=_summary_from_checks(domain, checks, status),
         checks=checks,
+        automatedChecks=checks,
+        manualChecks=build_manual_checks(),
+        gmailBulkChecklist=build_bulk_checklist(
+            spf_check,
+            dkim_check,
+            dmarc_check,
+            spf_lookup_check,
+            "gmail",
+        ),
+        yahooBulkChecklist=build_bulk_checklist(
+            spf_check,
+            dkim_check,
+            dmarc_check,
+            spf_lookup_check,
+            "yahoo",
+        ),
         nextSteps=_next_steps_from_checks(checks),
         disclaimer=DISCLAIMER,
     )
