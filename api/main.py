@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,6 +9,24 @@ from fastapi.responses import JSONResponse
 
 from api.routers.check_domain import router as check_domain_router
 from api.routers.checks import router as checks_router
+
+DEFAULT_LOCAL_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://127.0.0.1:3002",
+]
+
+
+def allowed_origins_from_env() -> list[str]:
+    raw_origins = os.getenv("ALLOWED_ORIGINS")
+    if not raw_origins:
+        return DEFAULT_LOCAL_ORIGINS
+
+    origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+    return origins or DEFAULT_LOCAL_ORIGINS
 
 
 app = FastAPI(
@@ -17,14 +37,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",
-        "http://127.0.0.1:3002",
-    ],
+    allow_origins=allowed_origins_from_env(),
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],

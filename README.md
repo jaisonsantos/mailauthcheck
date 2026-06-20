@@ -146,6 +146,57 @@ Then open:
 http://localhost:3000
 ~~~
 
+## Production envs
+
+Frontend:
+
+~~~env
+NEXT_PUBLIC_SITE_URL=https://mailauthcheck.com
+NEXT_PUBLIC_MAILAUTHCHECK_API_URL=https://api.mailauthcheck.com
+NEXT_PUBLIC_SHOW_LOCALE_SELECTOR=false
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=mailauthcheck.com
+NEXT_PUBLIC_LEAD_CAPTURE_URL=https://tally.so/r/your-form-id
+NEXT_PUBLIC_CONTACT_EMAIL=hello@mailauthcheck.com
+~~~
+
+Notes:
+
+- `NEXT_PUBLIC_MAILAUTHCHECK_API_URL` should be the backend origin only.
+- Do not append `/api`; the frontend already appends each endpoint path.
+- Set `NEXT_PUBLIC_SHOW_LOCALE_SELECTOR=false` for the first public launch if the UI should stay English-only.
+
+Backend:
+
+~~~env
+ALLOWED_ORIGINS=https://mailauthcheck.com,https://www.mailauthcheck.com,https://mailauthcheck.vercel.app
+~~~
+
+Notes:
+
+- `ALLOWED_ORIGINS` is comma-separated.
+- In local development, localhost origins remain the fallback when `ALLOWED_ORIGINS` is unset.
+- Do not use `*` in production.
+
+## Pre-launch checks
+
+Before a public deploy:
+
+- Confirm frontend scans work with the production value of `NEXT_PUBLIC_MAILAUTHCHECK_API_URL`.
+- Confirm the backend responds at `/healthz`.
+- Confirm the frontend origin is included in `ALLOWED_ORIGINS`.
+- Confirm `NEXT_PUBLIC_LEAD_CAPTURE_URL` opens a real external form and receives query params for `domain`, `espProvider`, `status`, `score`, `issues`, `tool`, `page`, and `cta`.
+- Confirm analytics is enabled with `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`.
+- Confirm the launch language decision matches `NEXT_PUBLIC_SHOW_LOCALE_SELECTOR`.
+
+Quick production smoke tests:
+
+~~~bash
+curl https://api.mailauthcheck.com/healthz
+curl -s -X POST https://api.mailauthcheck.com/api/check-domain \
+  -H "content-type: application/json" \
+  -d '{"domain":"example.com","mode":"bulk_sender","espProvider":"mailchimp"}'
+~~~
+
 ## Documentation map
 
 - `AGENTS.md` — permanent rules for AI agents and contributors.

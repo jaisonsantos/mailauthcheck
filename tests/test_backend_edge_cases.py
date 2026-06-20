@@ -3,12 +3,37 @@ from __future__ import annotations
 import unittest
 from unittest.mock import patch
 
+from api import main as api_main
 from api.services import checks
 from api.services.checks import SPFRecordFetchResult
 from api.services.dns_resolver import DNSQueryResult
 
 
 class BackendEdgeCaseTests(unittest.TestCase):
+    def test_allowed_origins_from_env_uses_local_defaults(self) -> None:
+        with patch.dict("os.environ", {}, clear=False):
+            self.assertEqual(api_main.allowed_origins_from_env(), api_main.DEFAULT_LOCAL_ORIGINS)
+
+    def test_allowed_origins_from_env_parses_csv(self) -> None:
+        with patch.dict(
+            "os.environ",
+            {
+                "ALLOWED_ORIGINS": (
+                    "https://mailauthcheck.com, https://www.mailauthcheck.com, "
+                    "https://mailauthcheck.vercel.app"
+                )
+            },
+            clear=False,
+        ):
+            self.assertEqual(
+                api_main.allowed_origins_from_env(),
+                [
+                    "https://mailauthcheck.com",
+                    "https://www.mailauthcheck.com",
+                    "https://mailauthcheck.vercel.app",
+                ],
+            )
+
     def test_spf_timeout_returns_error_with_retry_message(self) -> None:
         with patch.object(
             checks,
