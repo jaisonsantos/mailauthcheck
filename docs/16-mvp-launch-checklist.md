@@ -6,53 +6,53 @@ It should be used after specific implementation tasks exist. It does not authori
 
 ## Product
 
-- [ ] The central question is clear: is this domain ready to send email?
-- [ ] Domain input is easy to find and use.
-- [ ] The result is understandable for non-technical users.
-- [ ] SPF, DMARC, MX, SPF lookup count and Gmail/Yahoo readiness are visible.
-- [ ] Next steps are clear and limited to the main issues.
-- [ ] Technical details are available without overwhelming the main result.
-- [ ] Disclaimers are visible near the result.
-- [ ] The product does not promise inbox placement.
-- [ ] The CTA for assisted setup is present but lightweight.
-- [ ] No SaaS language dominates the MVP.
+- [x] The central question is clear: is this domain ready to send email?
+- [x] Domain input is easy to find and use.
+- [x] The result is understandable for non-technical users.
+- [x] SPF, DMARC, MX, SPF lookup count and Gmail/Yahoo readiness are visible.
+- [x] Next steps are clear and limited to the main issues.
+- [x] Technical details are available without overwhelming the main result.
+- [x] Disclaimers are visible near the result.
+- [x] The product does not promise inbox placement.
+- [x] The CTA for assisted setup is present but lightweight.
+- [x] No SaaS language dominates the MVP.
 
 ## Technical
 
-- [ ] Domain validation accepts domains only.
-- [ ] URLs are rejected.
-- [ ] Email addresses are rejected.
-- [ ] Empty input is rejected.
-- [ ] SPF check works.
-- [ ] Multiple SPF records are detected.
-- [ ] DMARC check works.
-- [ ] DMARC policy is detected.
-- [ ] MX check works.
-- [ ] SPF lookup count is estimated.
+- [x] Domain validation accepts domains only.
+- [x] URLs are rejected.
+- [x] Email addresses are rejected.
+- [x] Empty input is rejected.
+- [x] SPF check works.
+- [x] Multiple SPF records are detected.
+- [x] DMARC check works.
+- [x] DMARC policy is detected.
+- [x] MX check works.
+- [x] SPF lookup count is estimated.
 - [ ] DNS timeout is handled.
 - [ ] DNS error is handled.
 - [ ] Basic rate limiting exists.
 - [ ] In-memory TTL cache exists.
 - [ ] JSON logs exist.
-- [ ] Errors are friendly and actionable.
-- [ ] No database is required.
-- [ ] No authentication is required.
+- [x] Errors are friendly and actionable.
+- [x] No database is required.
+- [x] No authentication is required.
 
 ## SEO
 
-- [ ] `/` has a unique title and meta description.
-- [ ] `/spf-checker` has a unique title and meta description.
-- [ ] `/dmarc-checker` has a unique title and meta description.
-- [ ] `/mx-record-checker` has a unique title and meta description.
-- [ ] `/spf-lookup-counter` has a unique title and meta description.
-- [ ] Each page has one clear H1.
-- [ ] FAQ content exists where useful.
-- [ ] Internal links connect the initial pages.
-- [ ] Canonical URLs are set.
-- [ ] `sitemap.xml` exists.
-- [ ] `robots.txt` exists.
+- [x] `/` has a unique title and meta description.
+- [x] `/spf-checker` has a unique title and meta description.
+- [x] `/dmarc-checker` has a unique title and meta description.
+- [x] `/mx-record-checker` has a unique title and meta description.
+- [x] `/spf-lookup-counter` has a unique title and meta description.
+- [x] Each page has one clear H1.
+- [x] FAQ content exists where useful.
+- [x] Internal links connect the initial pages.
+- [x] Canonical URLs are set.
+- [x] `sitemap.xml` exists.
+- [x] `robots.txt` exists.
 - [ ] Google Search Console is ready.
-- [ ] SEO copy avoids deliverability guarantees.
+- [x] SEO copy avoids deliverability guarantees.
 
 ## Analytics
 
@@ -81,15 +81,15 @@ It should be used after specific implementation tasks exist. It does not authori
 
 ## Launch
 
-- [ ] Test with real domains that have valid SPF, DMARC and MX.
-- [ ] Test with a domain without SPF.
-- [ ] Test with a domain without DMARC.
+- [x] Test with real domains that have valid SPF, DMARC and MX.
+- [x] Test with a domain without SPF.
+- [x] Test with a domain without DMARC.
 - [ ] Test with a domain with multiple SPF records.
 - [ ] Test with a domain near or above SPF lookup limits.
 - [ ] Test timeout or DNS error handling.
 - [ ] Test mobile layout.
 - [ ] Test desktop layout.
-- [ ] Test SEO metadata in production build.
+- [x] Test SEO metadata in production build.
 - [ ] Test analytics events in production or preview.
 - [ ] Test lead form submission.
 - [ ] Publish the MVP.
@@ -101,12 +101,12 @@ It should be used after specific implementation tasks exist. It does not authori
 
 Launch when:
 
-- [ ] The scanner answers the central user question.
-- [ ] Core DNS checks work for representative domains.
-- [ ] The result includes next steps and disclaimers.
+- [x] The scanner answers the central user question.
+- [x] Core DNS checks work for representative domains.
+- [x] The result includes next steps and disclaimers.
 - [ ] Analytics and Search Console are ready.
 - [ ] Lead capture works without SaaS infrastructure.
-- [ ] The first five pages are indexable.
+- [x] The first five pages are indexable.
 
 Do not delay launch for:
 
