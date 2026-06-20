@@ -6,6 +6,8 @@ This document explains how MailAuthCheck can create possible customer conversati
 
 - **accepted:** The MVP is a free utility site with lightweight lead capture and assisted setup CTA.
 - **accepted:** There is no Stripe, checkout, billing system, dashboard, account model or database in the MVP.
+- **accepted:** Plausible is the preferred MVP analytics tool.
+- **accepted:** Lead capture should use an external hosted form URL instead of an internal database-backed form.
 - **hypothesis:** Some users with SPF, DMARC, MX or sender-readiness issues will ask for paid setup help.
 - **hypothesis:** Assisted setup can be validated manually before any productized paid workflow exists.
 
