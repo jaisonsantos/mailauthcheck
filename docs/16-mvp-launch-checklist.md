@@ -63,7 +63,7 @@ It should be used after specific implementation tasks exist. It does not authori
 - [x] `cta_clicked` is tracked.
 - [ ] `lead_submitted` is tracked.
 - [ ] Scan error rate can be reviewed.
-- [ ] CTA clicks can be separated by CTA type.
+- [x] CTA clicks can be separated by CTA type.
 - [ ] Unique domains can be estimated in a privacy-conscious way.
 
 ## Lead Capture
