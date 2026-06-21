@@ -22,6 +22,35 @@ export function buildLeadCaptureUrl(
     .join(" | ");
 
   if (!leadCaptureUrl) {
+    return buildMailtoUrl(result, espProvider, context, issueSummary);
+  }
+
+  try {
+    const url = new URL(leadCaptureUrl);
+    url.searchParams.set("domain", result.domain);
+    url.searchParams.set("tool", context.toolName);
+    url.searchParams.set("page", context.toolPath);
+    if (espProvider) {
+      url.searchParams.set("espProvider", espProvider);
+    }
+    url.searchParams.set("status", result.status);
+    url.searchParams.set("score", String(result.score));
+    url.searchParams.set("cta", context.buttonLabel);
+    if (issueSummary) {
+      url.searchParams.set("issues", issueSummary);
+    }
+    return url.toString();
+  } catch {
+    return buildMailtoUrl(result, espProvider, context, issueSummary);
+  }
+}
+
+function buildMailtoUrl(
+  result: AggregateResult,
+  espProvider: string | undefined,
+  context: LeadCaptureContext,
+  issueSummary: string,
+) {
     const subject = encodeURIComponent(
       `MailAuthCheck help request for ${result.domain}`,
     );
@@ -40,20 +69,4 @@ export function buildLeadCaptureUrl(
     );
 
     return `mailto:${contactEmail}?subject=${subject}&body=${body}`;
-  }
-
-  const url = new URL(leadCaptureUrl);
-  url.searchParams.set("domain", result.domain);
-  url.searchParams.set("tool", context.toolName);
-  url.searchParams.set("page", context.toolPath);
-  if (espProvider) {
-    url.searchParams.set("espProvider", espProvider);
-  }
-  url.searchParams.set("status", result.status);
-  url.searchParams.set("score", String(result.score));
-  url.searchParams.set("cta", context.buttonLabel);
-  if (issueSummary) {
-    url.searchParams.set("issues", issueSummary);
-  }
-  return url.toString();
 }
