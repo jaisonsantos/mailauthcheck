@@ -32,7 +32,7 @@ import { buildDeveloperReport, toneFromStatus } from "@/lib/report";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_MAILAUTHCHECK_API_URL ?? "http://127.0.0.1:8000";
-const SHOW_LOCALE_SELECTOR = true;
+const SHOW_LOCALE_SELECTOR = process.env.NEXT_PUBLIC_SHOW_LOCALE_SELECTOR === "true";
 
 type Locale = "en" | "es" | "pt";
 type Theme = "light" | "dark";
@@ -81,17 +81,17 @@ const chromeCopy = {
       "Type a domain, optionally choose the ESP, and click the main check button. This is the only action that runs DNS checks.",
     howReportTitle: "Copy a technical report",
     howReport:
-      "After a scan, copy the result summary and raw records so you can send them to a developer or agency.",
+      "After a scan, copy the result summary and raw records so you can send them to your developer or agency.",
     howHelpTitle: "Request assisted setup",
     howHelp:
       "After a scan, the help CTA opens a lightweight contact flow. There is no login, checkout or dashboard.",
     helpLabel: "Assisted setup CTA",
-    helpTitle: "Need help fixing this?",
+    helpTitle: "Need this fixed before your next campaign?",
     helpIntro:
-      "This stays lightweight. It points users toward manual setup help without adding accounts, checkout or a dashboard.",
-    helpButton: "Need help fixing this?",
+      "We can review your SPF, DKIM and DMARC setup and send you the exact DNS changes to apply.",
+    helpButton: "Need this fixed before your next campaign?",
     helpUnavailable: "Run a scan to request help",
-    copyReport: "Copy technical report",
+    copyReport: "Copy report for my developer",
     copyCopied: "Technical report copied",
     copyFailed: "Copy failed",
     copyUnavailable: "Run a scan to copy report",
@@ -154,12 +154,12 @@ const chromeCopy = {
     howHelp:
       "Despues de un scan, el CTA de ayuda abre un flujo ligero de contacto. No hay login, checkout ni dashboard.",
     helpLabel: "CTA de ayuda",
-    helpTitle: "Necesitas ayuda para corregirlo?",
+    helpTitle: "Necesitas resolver esto antes de tu proxima campana?",
     helpIntro:
-      "Se mantiene ligero. Apunta a ayuda manual de setup sin cuentas, checkout ni dashboard.",
-    helpButton: "Necesitas ayuda para corregirlo?",
+      "Podemos revisar tu SPF, DKIM y DMARC y decirte exactamente que cambios DNS aplicar.",
+    helpButton: "Necesitas resolver esto antes de tu proxima campana?",
     helpUnavailable: "Ejecuta un scan para pedir ayuda",
-    copyReport: "Copiar reporte tecnico",
+    copyReport: "Copiar reporte para mi developer",
     copyCopied: "Reporte tecnico copiado",
     copyFailed: "No se pudo copiar",
     copyUnavailable: "Ejecuta un scan para copiar reporte",
@@ -222,12 +222,12 @@ const chromeCopy = {
     howHelp:
       "Depois de um scan, o CTA de ajuda abre um fluxo leve de contato. Nao ha login, checkout ou dashboard.",
     helpLabel: "CTA de ajuda",
-    helpTitle: "Precisa de ajuda para corrigir isso?",
+    helpTitle: "Precisa resolver isso antes da sua proxima campanha?",
     helpIntro:
-      "Isso continua leve. Aponta para ajuda manual de setup sem contas, checkout ou dashboard.",
-    helpButton: "Precisa de ajuda para corrigir isso?",
+      "Podemos revisar seu SPF, DKIM e DMARC e indicar exatamente quais mudancas DNS aplicar.",
+    helpButton: "Precisa resolver isso antes da sua proxima campanha?",
     helpUnavailable: "Rode um scan para pedir ajuda",
-    copyReport: "Copiar relatorio tecnico",
+    copyReport: "Copiar relatorio para meu developer",
     copyCopied: "Relatorio tecnico copiado",
     copyFailed: "Falha ao copiar",
     copyUnavailable: "Rode um scan para copiar relatorio",
@@ -660,6 +660,45 @@ function contextualStatusLabel(status: AggregateResult["status"], config: Checke
   return config.statusLabels[status];
 }
 
+function contextualHelpButtonLabel(locale: Locale, espProvider: string) {
+  if (locale === "en") {
+    if (espProvider === "mailchimp") {
+      return "Need help fixing Mailchimp domain authentication?";
+    }
+    if (espProvider === "brevo") {
+      return "Need help fixing Brevo SPF/DKIM/DMARC?";
+    }
+    if (espProvider === "sendgrid") {
+      return "Need help fixing SendGrid domain authentication?";
+    }
+    return chromeCopy.en.helpButton;
+  }
+
+  if (locale === "es") {
+    if (espProvider === "mailchimp") {
+      return "Necesitas ayuda con la autenticacion de dominio en Mailchimp?";
+    }
+    if (espProvider === "brevo") {
+      return "Necesitas ayuda con SPF/DKIM/DMARC en Brevo?";
+    }
+    if (espProvider === "sendgrid") {
+      return "Necesitas ayuda con la autenticacion de dominio en SendGrid?";
+    }
+    return "Necesitas ayuda para corregirlo?";
+  }
+
+  if (espProvider === "mailchimp") {
+    return "Precisa de ajuda com a autenticacao de dominio no Mailchimp?";
+  }
+  if (espProvider === "brevo") {
+    return "Precisa de ajuda com SPF/DKIM/DMARC no Brevo?";
+  }
+  if (espProvider === "sendgrid") {
+    return "Precisa de ajuda com a autenticacao de dominio no SendGrid?";
+  }
+  return "Precisa de ajuda para corrigir isso?";
+}
+
 function ScoreFlags({ result, locale }: { result: AggregateResult; locale: Locale }) {
   const topFlags = result.checks
     .filter((check) => check.status !== "ok")
@@ -785,11 +824,15 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   const [isLoading, setIsLoading] = useState(false);
   const [copyLabel, setCopyLabel] = useState(chromeCopy.en.copyReport);
 
-  const copy = chromeCopy[locale];
+  const effectiveLocale: Locale = SHOW_LOCALE_SELECTOR ? locale : "en";
+  const copy = chromeCopy[effectiveLocale];
   const localizedConfig = {
     ...config,
-    ...(pageCopy[locale][config.pathname] ?? {}),
+    ...(pageCopy[effectiveLocale][config.pathname] ?? {}),
   };
+  const activeHelpLabel = result
+    ? contextualHelpButtonLabel(effectiveLocale, espProvider)
+    : copy.helpUnavailable;
 
   useEffect(() => {
     if (SHOW_LOCALE_SELECTOR) {
@@ -830,7 +873,13 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   const manualChecks = displayResult.manualChecks ?? [];
   const gmailChecklist = displayResult.gmailBulkChecklist ?? [];
   const yahooChecklist = displayResult.yahooBulkChecklist ?? [];
-  const leadCaptureUrl = result ? buildLeadCaptureUrl(result, espProvider || undefined) : null;
+  const leadCaptureUrl = result
+    ? buildLeadCaptureUrl(result, espProvider || undefined, {
+        buttonLabel: contextualHelpButtonLabel(effectiveLocale, espProvider),
+        toolName: localizedConfig.reportToolName,
+        toolPath: config.pathname,
+      })
+    : null;
   const leadCaptureChannel =
     leadCaptureUrl?.startsWith("mailto:") ? "mailto" : leadCaptureUrl ? "external_form" : null;
 
@@ -1124,7 +1173,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                 ? result.summary
                 : localizedConfig.previewSummary}
             </p>
-            <ScoreFlags result={displayResult} locale={locale} />
+            <ScoreFlags result={displayResult} locale={effectiveLocale} />
           </aside>
         </div>
       </section>
@@ -1236,12 +1285,12 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                 onClick={handleHelpClick}
               >
                 <Wrench aria-hidden="true" />
-                {copy.helpButton}
+                {activeHelpLabel}
               </a>
             ) : (
               <button className="inactive-action" type="button" disabled>
                 <Wrench aria-hidden="true" />
-                {copy.helpUnavailable}
+                {activeHelpLabel}
               </button>
             )}
             <button

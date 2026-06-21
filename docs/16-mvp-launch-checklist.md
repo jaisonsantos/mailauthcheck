@@ -91,6 +91,11 @@ It should be used after specific implementation tasks exist. It does not authori
 
 ## Launch
 
+- [ ] Choose the first deployment path: easiest managed backend or cheapest persistent Oracle Always Free backend.
+- [ ] Configure frontend env vars in the hosting provider.
+- [ ] Configure backend `ALLOWED_ORIGINS` with exact production and preview frontend origins.
+- [ ] Confirm frontend and backend both use HTTPS in production.
+- [ ] Confirm backend `/healthz` is reachable from outside the local network.
 - [x] Test with real domains that have valid SPF, DMARC and MX.
 - [x] Test with an ESP-selected domain that has DKIM selector records.
 - [x] Test with an ESP-selected domain where common DKIM selectors are not found.
@@ -106,6 +111,7 @@ It should be used after specific implementation tasks exist. It does not authori
 - [x] Test SEO metadata in production build.
 - [ ] Test analytics events in production or preview.
 - [ ] Test lead form submission.
+- [ ] Confirm external lead form receives `domain`, `espProvider`, `status`, `score`, `issues`, `tool`, `page`, and `cta`.
 - [ ] Publish the MVP.
 - [ ] Submit sitemap in Search Console.
 - [ ] Share in initial channels.
