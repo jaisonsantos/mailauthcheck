@@ -177,6 +177,59 @@ Notes:
 - In local development, localhost origins remain the fallback when `ALLOWED_ORIGINS` is unset.
 - Do not use `*` in production.
 
+## Free-tier launch setup
+
+The recommended first launch should stay simple and cheap. The goal is validation, not infrastructure perfection.
+
+### Option A - easiest
+
+- Frontend: Vercel free tier.
+- Backend: Render, Fly.io, Railway or another simple managed service.
+- Lead capture: Tally, Google Forms, Formspree or similar.
+- Analytics: Plausible or another lightweight analytics option.
+- SEO: Google Search Console.
+
+This is the fastest path because Vercel handles the Next.js frontend and the backend only needs to expose one HTTPS API URL.
+
+Tradeoff: some free backend providers may sleep, so the first scan after inactivity can be slower.
+
+### Option B - cheapest persistent backend
+
+- Frontend: Vercel free tier.
+- Backend: Oracle Cloud Always Free VM.
+- Reverse proxy: Caddy or Nginx for HTTPS.
+- Process manager: systemd.
+- Lead capture: external form.
+- Database: none.
+
+This avoids backend sleep, but you must manage the VM firewall, service restart and HTTPS setup.
+
+Minimal backend runtime:
+
+~~~bash
+.venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000
+~~~
+
+Expose it publicly through the reverse proxy as:
+
+~~~text
+https://api.mailauthcheck.com
+~~~
+
+Then set the frontend variable:
+
+~~~env
+NEXT_PUBLIC_MAILAUTHCHECK_API_URL=https://api.mailauthcheck.com
+~~~
+
+Keep `ALLOWED_ORIGINS` strict:
+
+~~~env
+ALLOWED_ORIGINS=https://mailauthcheck.com,https://www.mailauthcheck.com,https://mailauthcheck.vercel.app
+~~~
+
+Do not add a database, login, dashboard, queue, billing or internal lead storage for launch.
+
 ## Pre-launch checks
 
 Before a public deploy:
