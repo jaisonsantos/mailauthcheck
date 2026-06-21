@@ -81,6 +81,101 @@ For validation, use:
 | SEO | Google Search Console |
 | Forms | external hosted form URL such as Tally, Formspree, Google Forms, or similar |
 
+## Free-tier launch path
+
+The preferred launch path should stay cheap and operationally simple. This is a launch hypothesis, not a permanent infrastructure decision.
+
+### Recommended first setup
+
+| Layer | Free or low-cost option | Why it fits the MVP |
+|---|---|---|
+| Frontend | Vercel free tier | Simple Next.js deploy, preview URLs, custom domain support and no server management. |
+| Backend | Oracle Cloud Always Free VM, Render free/low-cost service, Fly.io allowance or Railway trial/low-cost plan | FastAPI can run as a small single process. DNS checks do not need a database, queue or cluster. |
+| Domain/DNS | Existing domain DNS provider | No special DNS infrastructure is required for the product itself. |
+| Analytics | Plausible trial/self-host later, or a privacy-friendly alternative if cost becomes an issue | The app only needs page views and a few custom events at launch. |
+| Lead capture | Tally free tier, Google Forms, Formspree free tier or similar | Keeps lead capture external and avoids a database. |
+| Monitoring | Provider health checks and manual smoke tests | Enough for the first validation window. Avoid recurring monitoring features inside the product. |
+
+### Easiest operational option
+
+Use Vercel for the frontend and a simple managed backend provider for the first deploy.
+
+This is easiest because:
+
+- Vercel handles the Next.js build and HTTPS.
+- The backend receives one public HTTPS URL.
+- `NEXT_PUBLIC_MAILAUTHCHECK_API_URL` points to that backend URL.
+- `ALLOWED_ORIGINS` only needs the Vercel production domain and any preview domains used for testing.
+
+Tradeoff:
+
+- Some free backend providers sleep or cold-start. That can make the first scan slower.
+
+### Cheapest persistent option
+
+Use Vercel for the frontend and Oracle Cloud Always Free for the backend.
+
+This can be very cheap because:
+
+- the backend VM can stay running without free-tier sleep;
+- FastAPI + Uvicorn is lightweight enough for a small VM;
+- no database, queue or Redis is required.
+
+Tradeoffs:
+
+- you must manage the VM, firewall, process restart and HTTPS/proxy setup;
+- setup is slower than a managed platform;
+- DNS/firewall mistakes can make the API unreachable.
+
+### Minimal Oracle VM shape
+
+For MVP validation, a small VM is enough:
+
+- one FastAPI process;
+- Uvicorn behind a simple reverse proxy such as Caddy or Nginx;
+- HTTPS enabled by the proxy;
+- systemd service for restart on reboot;
+- no database;
+- no Docker requirement unless it makes your own operations easier.
+
+Suggested backend environment:
+
+~~~env
+ALLOWED_ORIGINS=https://mailauthcheck.com,https://www.mailauthcheck.com,https://mailauthcheck.vercel.app
+~~~
+
+Suggested frontend environment:
+
+~~~env
+NEXT_PUBLIC_SITE_URL=https://mailauthcheck.com
+NEXT_PUBLIC_MAILAUTHCHECK_API_URL=https://api.mailauthcheck.com
+NEXT_PUBLIC_SHOW_LOCALE_SELECTOR=false
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=mailauthcheck.com
+NEXT_PUBLIC_LEAD_CAPTURE_URL=https://tally.so/r/your-form-id
+NEXT_PUBLIC_CONTACT_EMAIL=hello@mailauthcheck.com
+~~~
+
+### Free-tier risks to watch
+
+- Backend sleep or cold start can make the first scan feel broken.
+- Provider request limits may affect public launch posts if traffic spikes.
+- Free analytics or form tools may limit event history or submissions.
+- Oracle VM operations are cheap but require manual maintenance.
+- Using `http://` instead of `https://` in production can cause browser and CORS issues.
+- CORS must include the exact frontend origin; do not use `*` in production.
+
+### Recommendation for the first 30 days
+
+Start with the simplest path that you can actually operate:
+
+1. Deploy frontend to Vercel.
+2. Deploy backend to either a simple managed service or Oracle Always Free.
+3. Configure an external form.
+4. Configure Search Console.
+5. Run manual smoke tests after every deploy.
+
+Do not add database, login, queue, billing or internal lead storage to solve launch operations.
+
 ## Frontend analytics
 
 Use a lightweight client-side analytics helper.

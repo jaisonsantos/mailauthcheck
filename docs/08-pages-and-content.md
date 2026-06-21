@@ -55,8 +55,8 @@ These pages should launch in the first 7 days.
 | Invalid domain | Enter a valid domain, like example.com. Do not include https:// or email addresses. |
 | DNS timeout | DNS lookup took too long. Try again in a moment. |
 | No DNS | We could not find DNS records for this domain. |
-| Help CTA | Need help fixing this? |
-| Developer CTA | Copy technical report |
+| Help CTA | Need this fixed before your next campaign? |
+| Developer CTA | Copy report for my developer |
 | Lead CTA | Send this to my developer |
 | Disclaimer | This tool checks public DNS and known bulk sender readiness signals. It does not guarantee inbox placement. |
 
