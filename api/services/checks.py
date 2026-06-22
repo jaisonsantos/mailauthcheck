@@ -648,6 +648,14 @@ def build_mx_check(domain: str) -> CheckResult:
     )
 
 
+def _extract_dkim_public_key(record: str) -> str | None:
+    for part in record.split(";"):
+        key, separator, value = part.partition("=")
+        if separator and key.strip().lower() == "p":
+            return value.strip()
+    return None
+
+
 def build_dkim_check(domain: str, esp_provider: str | None = None) -> CheckResult:
     normalized_esp = normalize_esp_provider(esp_provider)
     selectors = COMMON_DKIM_SELECTORS_BY_ESP.get(normalized_esp or "", DEFAULT_DKIM_SELECTORS)
@@ -668,6 +676,22 @@ def build_dkim_check(domain: str, esp_provider: str | None = None) -> CheckResul
             if dkim_records:
                 raw_records.extend(dkim_records)
                 confidence = "medium" if normalized_esp else "low"
+                has_non_empty_public_key = any(
+                    (public_key or "").strip()
+                    for public_key in (_extract_dkim_public_key(record) for record in dkim_records)
+                )
+                if not has_non_empty_public_key:
+                    return make_check(
+                        check_name="DKIM",
+                        status="warning",
+                        severity="medium",
+                        summary="DKIM selector found, but the public key is empty.",
+                        technical_details=f"Found DKIM at {host}, but the p= value is empty.",
+                        recommended_fix="Publish a non-empty DKIM public key for this selector.",
+                        raw_records=dkim_records,
+                        confidence=confidence,
+                        can_be_false_positive=not bool(normalized_esp),
+                    )
                 return make_check(
                     check_name="DKIM",
                     status="ok",

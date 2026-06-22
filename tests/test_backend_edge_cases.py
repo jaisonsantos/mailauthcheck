@@ -111,6 +111,26 @@ class BackendEdgeCaseTests(unittest.TestCase):
         self.assertEqual(dkim_check.confidence, "medium")
         self.assertEqual(dkim_check.rawRecords, ["v=DKIM1; k=rsa; p=abc123"])
 
+    def test_dkim_empty_public_key_is_warning(self) -> None:
+        def fake_resolve_txt(host: str) -> DNSQueryResult:
+            if host == "k1._domainkey.example.com":
+                return DNSQueryResult(
+                    status="ok",
+                    values=["v=DKIM1; p="],
+                )
+            return DNSQueryResult(status="no_answer", values=[])
+
+        with patch.object(checks, "resolve_txt", side_effect=fake_resolve_txt):
+            dkim_check = checks.build_dkim_check("example.com", "mailchimp")
+
+        self.assertEqual(dkim_check.status, "warning")
+        self.assertEqual(
+            dkim_check.summary,
+            "DKIM selector found, but the public key is empty.",
+        )
+        self.assertIn("p= value is empty", dkim_check.technicalDetails or "")
+        self.assertEqual(dkim_check.rawRecords, ["v=DKIM1; p="])
+
     def test_dkim_not_found_for_common_selectors_is_warning_not_error(self) -> None:
         with patch.object(
             checks,
