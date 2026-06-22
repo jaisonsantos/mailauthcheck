@@ -1,0 +1,1 @@
+"""MailAuthCheck test suite."""
