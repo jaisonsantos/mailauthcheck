@@ -115,7 +115,7 @@ The smallest useful launch is one page with:
 - [ ] DMARC check returns ok, warning, missing, or error.
 - [ ] MX check returns ok, missing, or error.
 - [ ] SPF lookup count returns ok, warning, or error.
-- [ ] Gmail/Yahoo readiness returns ready, needs work, not ready, or incomplete.
+- [ ] Gmail/Yahoo readiness returns ready, needs review, not ready, or incomplete.
 - [ ] Manual checks are never marked passed unless verified.
 - [ ] Score returns 0–100 and label.
 - [ ] Result includes plain-English summary.

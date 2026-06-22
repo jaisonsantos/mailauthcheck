@@ -72,7 +72,7 @@ Understand the automated DNS signals and manual checks that matter before bulk s
 
 ## CTA
 
-Check bulk readiness
+Check readiness
 
 ## Disclaimer
 
@@ -84,7 +84,7 @@ MailAuthCheck is a free bulk email readiness checker for SPF, DKIM, DMARC, MX, S
 
 ## Long description
 
-MailAuthCheck helps marketers, e-commerce operators, agencies and developers quickly understand whether a domain has the basic authentication signals expected for bulk email to Gmail and Yahoo. Enter a domain, optionally choose an ESP, and get a simple report covering SPF, DKIM selector signals, DMARC, MX records, SPF DNS lookup count, manual checklist items and plain-English next steps.
+MailAuthCheck helps marketers, e-commerce operators, agencies and developers quickly understand whether a domain has the basic authentication signals expected for bulk email to Gmail and Yahoo. Enter a domain, optionally choose a sending platform, and get a simple report covering SPF, DKIM selector signals, DMARC, MX records, SPF DNS lookup count, manual checklist items and plain-English next steps.
 
 ## Product principles
 

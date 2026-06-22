@@ -205,7 +205,7 @@ Plan score, labels, result cards and explanations in a way users can act on.
 ### Small tasks
 
 - Apply a DNS Authentication Score from 0-100.
-- Map score and blockers to `Ready`, `Needs work`, `Not ready` or `DNS checks incomplete`.
+- Map score and blockers to `Ready`, `Needs review`, `Not ready` or `DNS checks incomplete`.
 - Render manual checks separately from the score.
 - Define blockers that prevent `Ready`.
 - Render result cards for each check.

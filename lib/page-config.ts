@@ -44,7 +44,7 @@ export type CheckerPageConfig = {
 
 const bulkStatusLabels: CheckerPageConfig["statusLabels"] = {
   ready: "Ready",
-  needs_attention: "Needs work",
+  needs_attention: "Needs review",
   not_ready: "Not ready",
   error: "Error",
 };
@@ -152,7 +152,7 @@ const homePreview: AggregateResult = {
       checkName: "Gmail/Yahoo Readiness",
       status: "warning",
       severity: "medium",
-      summary: "Bulk readiness needs work.",
+      summary:       "Bulk readiness needs review.",
       technicalDetails:
         "Automated DNS signals are only part of bulk readiness. One-click unsubscribe, spam rate and alignment still need manual review.",
       recommendedFix:
@@ -242,7 +242,7 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
       "Check SPF, DKIM, DMARC, MX, SPF lookups and manual Gmail/Yahoo bulk sender requirements.",
     h1: "Bulk Email Readiness Checker",
     eyebrow: "Gmail/Yahoo bulk sender readiness",
-    buttonLabel: "Check bulk readiness",
+    buttonLabel: "Check readiness",
     intro:
       "Check if your domain meets the basic Gmail and Yahoo bulk sender requirements before your next campaign. Review SPF, DKIM, DMARC, MX, SPF lookups and manual checks like one-click unsubscribe and spam-rate monitoring.",
     previewSummary:
@@ -309,7 +309,7 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
       "Check whether your domain has the basic DNS signals expected before bulk sending to Gmail and Yahoo.",
     h1: "Bulk Email Readiness Checker",
     eyebrow: "Bulk sender DNS readiness",
-    buttonLabel: "Check bulk readiness",
+    buttonLabel: "Check readiness",
     intro:
       "Run a focused bulk sender readiness check before a newsletter, campaign or automation. Review SPF, DKIM selector signals, DMARC, MX, SPF lookups and manual requirements that DNS cannot confirm.",
     previewSummary:

@@ -2,7 +2,7 @@
 
 MailAuthCheck is a free, fast, SEO-friendly utility site that checks whether a domain is ready for bulk email sending to Gmail and Yahoo.
 
-The user enters a domain, such as `example.com`, optionally selects an email service provider, and receives a practical report covering SPF, DKIM selector signals, DMARC, MX records, SPF DNS lookup count, and manual bulk-sender requirements that cannot be verified from DNS alone.
+The user enters a domain, such as `example.com`, optionally selects a sending platform, and receives a practical report covering SPF, DKIM selector signals, DMARC, MX records, SPF DNS lookup count, and manual bulk-sender requirements that cannot be verified from DNS alone.
 
 ## Product vision
 

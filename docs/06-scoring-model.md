@@ -17,7 +17,7 @@ Bulk labels:
 | Score | Label | Meaning |
 |---:|---|---|
 | 80–100 | Ready | Automated DNS authentication signals look ready for the next manual review step. |
-| 50–79 | Needs work | Some important records exist, but issues need fixing or manual confirmation. |
+| 50–79 | Needs review | Some important records exist, but issues need fixing or manual confirmation. |
 | 0–49 | Not ready | Important email authentication records are missing, broken or inconclusive. |
 
 ## DNS Authentication Score
@@ -119,7 +119,7 @@ Use this disclaimer near the score:
 Recommended UI pattern:
 
 ~~~text
-72/100 - Needs work
+72/100 - Needs review
 
 SPF: OK
 DMARC: Missing
@@ -143,7 +143,7 @@ Do not use language like:
 Use language like:
 
 - “Basic DNS readiness looks good.”
-- “Needs attention.”
+- “Needs review.”
 - “This may affect authentication.”
 - “This does not guarantee inbox placement.”
 - “This manual requirement cannot be verified from DNS.”

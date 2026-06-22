@@ -6,8 +6,10 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
+  ChevronUp,
   CircleHelp,
   Copy,
+  Eraser,
   LoaderCircle,
   MailCheck,
   Moon,
@@ -37,6 +39,20 @@ const SHOW_LOCALE_SELECTOR = process.env.NEXT_PUBLIC_SHOW_LOCALE_SELECTOR === "t
 type Locale = "en" | "es" | "pt";
 type Theme = "light" | "dark";
 
+type RecentCheckItem = {
+  id: string;
+  domain: string;
+  espProvider: string | null;
+  path: string;
+  resultSnapshot: AggregateResult;
+  savedAt: string;
+  source: "api_result";
+};
+
+const RECENT_CHECKS_STORAGE_KEY = "mailauthcheck.recentChecks.v1";
+const RECENT_CHECKS_TTL_MS = 24 * 60 * 60 * 1000;
+const RECENT_CHECKS_LIMIT = 10;
+
 const localeLabels: Record<Locale, string> = {
   en: "EN",
   es: "ES",
@@ -52,12 +68,12 @@ const chromeCopy = {
     noAccount: "No account needed",
     noInbox: "No inbox guarantee",
     domain: "Domain",
-    esp: "Email service provider",
+    esp: "Sending platform (optional)",
     helper:
-      "Enter a domain like example.com. Choose an ESP if you know which service sends your campaigns.",
+      "Enter a domain like example.com. Choose a sending platform only if you know it; the domain is enough to start.",
     loading: "Checking public DNS records...",
     liveChecker: "Live checker",
-    runCheck: "Run a check",
+    runCheck: "Check readiness",
     ready: "Ready",
     needsAttention: "Needs attention",
     notReady: "Not ready",
@@ -78,7 +94,7 @@ const chromeCopy = {
     howTitle: "What you can click on this page",
     howScanTitle: "Run the checker",
     howScan:
-      "Type a domain, optionally choose the ESP, and click the main check button. This is the only action that runs DNS checks.",
+      "Type a domain, optionally choose the sending platform, and click the main check button. The domain is the main input.",
     howReportTitle: "Copy a technical report",
     howReport:
       "After a scan, copy the result summary and raw records so you can send them to your developer or agency.",
@@ -95,6 +111,8 @@ const chromeCopy = {
     copyCopied: "Technical report copied",
     copyFailed: "Copy failed",
     copyUnavailable: "Run a scan to copy report",
+    clearResult: "Clear result",
+    backToTop: "Back to top",
     helpNoteResult:
       "This opens a simple external contact form and pre-fills the domain and main issues.",
     helpNoteEmpty: "Run a scan first to unlock the help request and technical report.",
@@ -120,12 +138,12 @@ const chromeCopy = {
     noAccount: "Sin cuenta",
     noInbox: "Sin garantia de entrega",
     domain: "Dominio",
-    esp: "Proveedor de email",
+    esp: "Plataforma de envio (opcional)",
     helper:
-      "Escribe un dominio como example.com. Elige un ESP si sabes que servicio envia tus campanas.",
+      "Escribe un dominio como example.com. Elige una plataforma solo si la conoces; el dominio basta para empezar.",
     loading: "Consultando DNS publicos...",
     liveChecker: "Verificador en vivo",
-    runCheck: "Ejecutar verificacion",
+    runCheck: "Comprobar preparacion",
     ready: "Listo",
     needsAttention: "Necesita atencion",
     notReady: "No listo",
@@ -146,7 +164,7 @@ const chromeCopy = {
     howTitle: "Que puedes hacer en esta pagina",
     howScanTitle: "Ejecutar el verificador",
     howScan:
-      "Escribe un dominio, opcionalmente elige el ESP y pulsa el boton principal. Esta es la unica accion que ejecuta checks DNS.",
+      "Escribe un dominio, elige opcionalmente la plataforma de envio y pulsa el boton principal. El dominio es la entrada principal.",
     howReportTitle: "Copiar reporte tecnico",
     howReport:
       "Despues de un scan, copia el resumen y los registros para enviarlos a un developer o agencia.",
@@ -163,6 +181,8 @@ const chromeCopy = {
     copyCopied: "Reporte tecnico copiado",
     copyFailed: "No se pudo copiar",
     copyUnavailable: "Ejecuta un scan para copiar reporte",
+    clearResult: "Limpiar resultado",
+    backToTop: "Volver arriba",
     helpNoteResult:
       "Esto abre un formulario externo simple y completa el dominio y los problemas principales.",
     helpNoteEmpty: "Ejecuta un scan primero para activar ayuda y reporte tecnico.",
@@ -188,12 +208,12 @@ const chromeCopy = {
     noAccount: "Sem conta",
     noInbox: "Sem garantia de entrega",
     domain: "Dominio",
-    esp: "Provedor de email",
+    esp: "Plataforma de envio (opcional)",
     helper:
-      "Digite um dominio como example.com. Escolha um ESP se souber qual servico envia suas campanhas.",
+      "Digite um dominio como example.com. Escolha uma plataforma so se souber qual e; o dominio e suficiente para comecar.",
     loading: "Consultando DNS publicos...",
     liveChecker: "Verificador ao vivo",
-    runCheck: "Executar verificacao",
+    runCheck: "Verificar preparacao",
     ready: "Pronto",
     needsAttention: "Precisa de atencao",
     notReady: "Nao pronto",
@@ -214,7 +234,7 @@ const chromeCopy = {
     howTitle: "O que voce pode fazer nesta pagina",
     howScanTitle: "Executar o verificador",
     howScan:
-      "Digite um dominio, opcionalmente escolha o ESP e clique no botao principal. Essa e a unica acao que executa checks DNS.",
+      "Digite um dominio, escolha opcionalmente a plataforma de envio e clique no botao principal. O dominio e a entrada principal.",
     howReportTitle: "Copiar relatorio tecnico",
     howReport:
       "Depois de um scan, copie o resumo e os registros para enviar a um developer ou agencia.",
@@ -231,6 +251,8 @@ const chromeCopy = {
     copyCopied: "Relatorio tecnico copiado",
     copyFailed: "Falha ao copiar",
     copyUnavailable: "Rode um scan para copiar relatorio",
+    clearResult: "Limpar resultado",
+    backToTop: "Voltar ao topo",
     helpNoteResult:
       "Isso abre um formulario externo simples e preenche dominio e principais problemas.",
     helpNoteEmpty: "Rode um scan primeiro para liberar ajuda e relatorio tecnico.",
@@ -656,6 +678,60 @@ function StatusIcon({ tone }: { tone: "ok" | "warn" | "error" }) {
   return <AlertTriangle aria-hidden="true" />;
 }
 
+function loadRecentChecks(): RecentCheckItem[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const now = Date.now();
+  try {
+    const raw = window.localStorage.getItem(RECENT_CHECKS_STORAGE_KEY);
+    if (!raw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(raw) as RecentCheckItem[];
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .filter((item) => item && typeof item.savedAt === "string")
+      .filter((item) => now - new Date(item.savedAt).getTime() <= RECENT_CHECKS_TTL_MS)
+      .slice(0, RECENT_CHECKS_LIMIT);
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentChecks(items: RecentCheckItem[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(RECENT_CHECKS_STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    // Ignore storage failures in the browser; history is a convenience only.
+  }
+}
+
+function dedupeRecentChecks(items: RecentCheckItem[]) {
+  const seen = new Set<string>();
+  const deduped: RecentCheckItem[] = [];
+
+  for (const item of items) {
+    const key = `${item.domain}|${item.espProvider || ""}|${item.path}`;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    deduped.push(item);
+  }
+
+  return deduped.slice(0, RECENT_CHECKS_LIMIT);
+}
+
 function contextualStatusLabel(status: AggregateResult["status"], config: CheckerPageConfig) {
   return config.statusLabels[status];
 }
@@ -824,6 +900,10 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copyLabel, setCopyLabel] = useState(chromeCopy.en.copyReport);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [recentChecks, setRecentChecks] = useState<RecentCheckItem[]>([]);
+  const [recentChecksExpanded, setRecentChecksExpanded] = useState(false);
+  const [showAllRecentChecks, setShowAllRecentChecks] = useState(false);
 
   const effectiveLocale: Locale = SHOW_LOCALE_SELECTOR ? locale : "en";
   const copy = chromeCopy[effectiveLocale];
@@ -866,6 +946,24 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
     setCopyLabel(chromeCopy[nextLocale].copyReport);
   }, [locale]);
 
+  useEffect(() => {
+    setRecentChecks(loadRecentChecks());
+  }, []);
+
+  useEffect(() => {
+    setShowAllRecentChecks(false);
+  }, [recentChecks.length]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setShowBackToTop(window.scrollY > 520);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const scoreTone = useMemo(() => {
     if (!result) {
       return localizedConfig.placeholderResult.score;
@@ -887,15 +985,82 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
     : null;
   const leadCaptureChannel =
     leadCaptureUrl?.startsWith("mailto:") ? "mailto" : leadCaptureUrl ? "external_form" : null;
+  const visibleRecentChecks = showAllRecentChecks ? recentChecks : recentChecks.slice(0, 3);
+  const hiddenRecentChecks = Math.max(0, recentChecks.length - visibleRecentChecks.length);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const normalizedDomain = domain.trim().toLowerCase();
+  function persistRecentCheck(nextResult: AggregateResult) {
+    const savedAt = new Date().toISOString();
+    const nextItem: RecentCheckItem = {
+      id: `${nextResult.domain}|${espProvider || ""}|${config.pathname}`,
+      domain: nextResult.domain,
+      espProvider: espProvider || null,
+      path: config.pathname,
+      resultSnapshot: nextResult,
+      savedAt,
+      source: "api_result",
+    };
+
+    setRecentChecks((current) => {
+      const nextItems = [
+        nextItem,
+        ...current.filter(
+          (item) =>
+            !(item.domain === nextItem.domain && item.espProvider === nextItem.espProvider && item.path === nextItem.path),
+        ),
+      ];
+      const pruned = dedupeRecentChecks(
+        nextItems.filter((item) => Date.now() - new Date(item.savedAt).getTime() <= RECENT_CHECKS_TTL_MS),
+      );
+      saveRecentChecks(pruned);
+      return pruned;
+    });
+  }
+
+  function openRecentCheck(item: RecentCheckItem) {
+    setResult(item.resultSnapshot);
+    setErrorMessage(null);
+    setDomain(item.domain);
+    setEspProvider(item.espProvider || "");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function removeRecentCheck(id: string) {
+    setRecentChecks((current) => {
+      const nextItems = current.filter((item) => item.id !== id);
+      saveRecentChecks(nextItems);
+      return nextItems;
+    });
+  }
+
+  function clearRecentChecks() {
+    setRecentChecks([]);
+    setShowAllRecentChecks(false);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(RECENT_CHECKS_STORAGE_KEY);
+    }
+  }
+
+  function toggleRecentChecksExpanded() {
+    setRecentChecksExpanded((value) => {
+      const nextExpanded = !value;
+      if (!nextExpanded) {
+        setShowAllRecentChecks(false);
+      }
+      return nextExpanded;
+    });
+    if (recentChecksExpanded) {
+      setShowAllRecentChecks(false);
+    }
+  }
+
+  async function runCheck(nextDomain: string, nextEspProvider: string, nextSource: "form" | "history") {
+    const normalizedDomain = nextDomain.trim().toLowerCase();
     trackEvent("scan_started", {
       tool: config.pathname,
       domain_entered: normalizedDomain.length > 0,
-      esp_selected: espProvider.length > 0,
-      esp_provider: espProvider || null,
+      esp_selected: nextEspProvider.length > 0,
+      esp_provider: nextEspProvider || null,
+      source: nextSource,
     });
     setIsLoading(true);
     setErrorMessage(null);
@@ -915,9 +1080,9 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                 "content-type": "application/json",
               },
               body: JSON.stringify({
-                domain,
+                domain: nextDomain,
                 mode: "bulk_sender",
-                espProvider: espProvider || null,
+                espProvider: nextEspProvider || null,
               }),
             }
           : undefined,
@@ -930,11 +1095,13 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
 
       if (!response.ok) {
         setResult(null);
-        setErrorMessage(
-          "message" in payload
-            ? payload.message
-            : "The DNS check could not be completed right now.",
-        );
+        const errorText =
+          response.status === 429
+            ? "You reached the temporary rate limit. You can open a saved result below if one exists."
+            : "message" in payload
+              ? payload.message
+              : "The DNS check could not be completed right now.";
+        setErrorMessage(errorText);
         trackEvent("scan_failed", {
           tool: config.pathname,
           domain: normalizedDomain || null,
@@ -943,6 +1110,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
               ? payload.error
               : "request_failed",
           status_code: response.status,
+          source: nextSource,
         });
         return;
       }
@@ -950,22 +1118,26 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       if ("score" in payload) {
         const aggregateResult = payload as AggregateResult;
         setResult(aggregateResult);
+        persistRecentCheck(aggregateResult);
         trackEvent("scan_completed", {
           tool: config.pathname,
           domain: aggregateResult.domain,
           status: aggregateResult.status,
           score: aggregateResult.score,
-          esp_provider: espProvider || null,
+          esp_provider: nextEspProvider || null,
+          source: nextSource,
         });
       } else {
         const normalizedResult = normalizeCheckListResult(payload as CheckListResult);
         setResult(normalizedResult);
+        persistRecentCheck(normalizedResult);
         trackEvent("scan_completed", {
           tool: config.pathname,
           domain: normalizedResult.domain,
           status: normalizedResult.status,
           score: normalizedResult.score,
-          esp_provider: espProvider || null,
+          esp_provider: nextEspProvider || null,
+          source: nextSource,
         });
       }
     } catch {
@@ -977,11 +1149,17 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
         tool: config.pathname,
         domain: normalizedDomain || null,
         error: "network_error",
-        esp_provider: espProvider || null,
+        esp_provider: nextEspProvider || null,
+        source: nextSource,
       });
     } finally {
       setIsLoading(false);
     }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await runCheck(domain, espProvider, "form");
   }
 
   async function handleCopyReport() {
@@ -1059,6 +1237,27 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       lead_channel: leadCaptureChannel,
       esp_provider: espProvider || null,
     });
+  }
+
+  function handleClearResult() {
+    setResult(null);
+    setErrorMessage(null);
+    setCopyLabel(copy.copyReport);
+    trackEvent("cta_clicked", {
+      tool: config.pathname,
+      cta: "clear_result",
+      cta_type: "reset_result",
+      had_result: Boolean(result),
+      had_error: Boolean(errorMessage),
+    });
+  }
+
+  function refreshRecentCheck(item: RecentCheckItem) {
+    void runCheck(item.domain, item.espProvider || "", "history");
+  }
+
+  function handleBackToTop() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
@@ -1151,7 +1350,85 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
               <p>
                 {errorMessage ?? copy.helper}
               </p>
+              {result || errorMessage ? (
+                <div className="result-actions">
+                  <button
+                    className="clear-result-button"
+                    type="button"
+                    onClick={handleClearResult}
+                    disabled={isLoading}
+                  >
+                    <Eraser aria-hidden="true" />
+                    {copy.clearResult}
+                  </button>
+                </div>
+              ) : null}
             </form>
+
+            <section className={`recent-checks ${recentChecksExpanded ? "expanded" : "collapsed"}`} aria-label="Recent checks">
+              <div className="recent-header">
+                <div className="section-heading">
+                  <p className="eyebrow">Recent checks</p>
+                  <h2>Recent checks</h2>
+                  <p>Saved on this device only. Open a saved result without making a new DNS request.</p>
+                </div>
+                <button
+                  type="button"
+                  className="recent-toggle"
+                  onClick={toggleRecentChecksExpanded}
+                  aria-expanded={recentChecksExpanded}
+                >
+                  {recentChecksExpanded ? "Hide history" : "Show history"}
+                </button>
+              </div>
+              <div className="recent-checks-body" aria-hidden={!recentChecksExpanded}>
+                {recentChecks.length === 0 ? (
+                  <p className="recent-empty">No saved checks yet. Run a scan to keep the latest result here.</p>
+                ) : (
+                  <div className="recent-list">
+                    {visibleRecentChecks.map((item) => (
+                      <article className="recent-item" key={item.id}>
+                        <div className="recent-item-copy">
+                          <h3>{item.domain}</h3>
+                          <p className="recent-meta">
+                            {item.espProvider ? item.espProvider : "No ESP selected"} · {new Date(item.savedAt).toLocaleString()}
+                          </p>
+                          <p className="recent-summary">
+                            Status: {item.resultSnapshot.status} · Score: {item.resultSnapshot.score}
+                          </p>
+                          <p className="recent-saved-note">Saved result. DNS may have changed.</p>
+                        </div>
+                        <div className="recent-actions">
+                          <button type="button" onClick={() => openRecentCheck(item)}>
+                            Open saved result
+                          </button>
+                          <button type="button" onClick={() => refreshRecentCheck(item)}>
+                            Check again
+                          </button>
+                          <button type="button" onClick={() => removeRecentCheck(item.id)}>
+                            Remove
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+                {hiddenRecentChecks > 0 ? (
+                  <button
+                    type="button"
+                    className="recent-show-more"
+                    onClick={() => setShowAllRecentChecks((value) => !value)}
+                  >
+                    {showAllRecentChecks ? "Show fewer" : `Show ${hiddenRecentChecks} more`}
+                  </button>
+                ) : null}
+                {recentChecks.length > 0 ? (
+                  <button type="button" className="clear-history-button" onClick={clearRecentChecks}>
+                    Clear history
+                  </button>
+                ) : null}
+              </div>
+            </section>
           </div>
 
           <aside className="score-panel" aria-label="Scan result">
@@ -1208,7 +1485,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                   {check.rawRecords.length > 0 ? (
                     <code>{check.rawRecords.join("\n")}</code>
                   ) : (
-                    <code>{copy.noRawRecord}</code>
+                    <p className="raw-record-empty">{copy.noRawRecord}</p>
                   )}
                 </article>
               );
@@ -1397,6 +1674,17 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
           </nav>
         </div>
       </footer>
+      {showBackToTop ? (
+        <button
+          type="button"
+          className="back-to-top-button"
+          onClick={handleBackToTop}
+          aria-label={copy.backToTop}
+        >
+          <ChevronUp aria-hidden="true" />
+          <span>{copy.backToTop}</span>
+        </button>
+      ) : null}
     </main>
   );
 }

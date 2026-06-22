@@ -17,7 +17,7 @@ export function statusLabel(status: AggregateResult["status"]): string {
     case "ready":
       return "Ready";
     case "needs_attention":
-      return "Needs work";
+      return "Needs review";
     case "not_ready":
       return "Not ready";
     default:

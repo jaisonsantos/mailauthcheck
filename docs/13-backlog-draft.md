@@ -152,7 +152,7 @@ Do not write code from this backlog until specific implementation tasks are crea
 
 **Acceptance criteria:**
 
-- Ready, needs work, not ready and incomplete states are defined.
+- Ready, needs review, not ready and incomplete states are defined.
 - DMARC missing blocks readiness for bulk sender requirements.
 - DKIM missing/unknown is confidence-aware and cannot be overclaimed.
 - One-click unsubscribe and spam rate are manual checks.

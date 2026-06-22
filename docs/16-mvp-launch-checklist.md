@@ -8,7 +8,7 @@ It should be used after specific implementation tasks exist. It does not authori
 
 - [x] The central question is clear: is this domain ready for bulk email sending to Gmail and Yahoo?
 - [x] Domain input is easy to find and use.
-- [x] Optional ESP selector is available.
+- [x] Optional sending platform selector is available.
 - [x] The result is understandable for non-technical users.
 - [x] SPF, DKIM selector signal, DMARC, MX, SPF lookup count and Gmail/Yahoo readiness are visible.
 - [x] Automated checks and manual checks are visually separated.
@@ -17,6 +17,7 @@ It should be used after specific implementation tasks exist. It does not authori
 - [x] Disclaimers are visible near the result.
 - [x] The product does not promise inbox placement.
 - [x] The CTA for assisted setup is present but lightweight.
+- [x] The main form makes the domain the primary input and the sending platform optional.
 - [x] No SaaS language dominates the MVP.
 
 ## Technical
@@ -41,6 +42,7 @@ It should be used after specific implementation tasks exist. It does not authori
 - [x] Errors are friendly and actionable.
 - [x] No database is required.
 - [x] No authentication is required.
+- [ ] Recent checks history is local-only, capped at 10 items, and expires after 24h.
 
 ## SEO
 
@@ -108,6 +110,10 @@ It should be used after specific implementation tasks exist. It does not authori
 - [x] Test timeout or DNS error handling.
 - [ ] Test mobile layout.
 - [ ] Test desktop layout.
+- [ ] Test recent checks can reopen a saved result without a new API request.
+- [ ] Test Refresh DNS now performs a live API request.
+- [ ] Test Clear history removes local saved snapshots.
+- [ ] Test 429 shows a fallback path when a saved snapshot exists.
 - [x] Test SEO metadata in production build.
 - [ ] Test analytics events in production or preview.
 - [ ] Test lead form submission.
