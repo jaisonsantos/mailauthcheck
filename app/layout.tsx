@@ -13,6 +13,22 @@ export const metadata: Metadata = {
     "Check SPF, DKIM, DMARC, MX, SPF lookups and manual Gmail/Yahoo bulk sender requirements before your next campaign.",
 };
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "MailAuthCheck",
+  description:
+    "Free bulk email readiness checker for SPF, DKIM, DMARC, MX, SPF lookups and Gmail/Yahoo sender requirements.",
+  url: siteUrl,
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Web",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,6 +37,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         <PlausibleProvider />
         {children}
       </body>

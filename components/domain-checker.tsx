@@ -1352,6 +1352,21 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
         </section>
       ) : null}
 
+      {config.contentSections.length > 0 ? (
+        <section className="content-band">
+          <div className="shell content-grid">
+            {config.contentSections.map((section) => (
+              <article key={section.title}>
+                <h2>{section.title}</h2>
+                {section.paragraphs.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="faq-band">
         <div className="shell">
           <div className="section-heading">

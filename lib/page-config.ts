@@ -15,6 +15,11 @@ export type GuidePreview = {
   summary: string;
 };
 
+export type ContentSection = {
+  title: string;
+  paragraphs: string[];
+};
+
 export type CheckerPageConfig = {
   pathname: string;
   apiPath: string;
@@ -29,6 +34,7 @@ export type CheckerPageConfig = {
   resultsIntro: string;
   placeholderResult: AggregateResult;
   guidePreviews: GuidePreview[];
+  contentSections: ContentSection[];
   faqs: FAQItem[];
   relatedTools: ToolLink[];
   reportToolName: string;
@@ -271,6 +277,22 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
           "Planned next: a plain-English guide to what can and cannot be checked from DNS.",
       },
     ],
+    contentSections: [
+      {
+        title: "What this readiness check reviews",
+        paragraphs: [
+          "MailAuthCheck focuses on the signals a marketer, agency or developer can review before sending a campaign from a custom domain. The automated checks inspect public DNS for SPF, DKIM selector signals, DMARC, MX records and SPF lookup pressure.",
+          "The result separates automated DNS signals from manual requirements. One-click unsubscribe, spam-rate monitoring, From alignment and message formatting cannot be proven from DNS alone, so the tool keeps those as checklist items instead of pretending they passed.",
+        ],
+      },
+      {
+        title: "How to use the score",
+        paragraphs: [
+          "Use the score as a prioritization tool, not as a deliverability promise. A high score means the visible DNS authentication basics look healthy, while warnings point to records or manual checks that deserve review before a bulk send.",
+          "If DKIM is not found through common selectors, treat the result carefully. The correct selector may be provider-specific, hidden in your ESP authentication screen or not published yet.",
+        ],
+      },
+    ],
     faqs: [
       {
         question: "What is a bulk sender?",
@@ -334,6 +356,22 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
           "Planned next: how to verify unsubscribe support in campaign tools and message headers.",
       },
     ],
+    contentSections: [
+      {
+        title: "Before sending a bulk campaign",
+        paragraphs: [
+          "A bulk sender readiness review should happen before a newsletter, promotion, launch email or automation sequence. The goal is to catch obvious authentication gaps before they affect a real campaign.",
+          "This page checks the public DNS basics and then reminds you which Gmail and Yahoo requirements still need manual confirmation in your ESP, message headers or provider dashboards.",
+        ],
+      },
+      {
+        title: "What still needs human review",
+        paragraphs: [
+          "DNS can show whether SPF, DKIM and DMARC records exist, but it cannot prove that every campaign message includes the right unsubscribe header, keeps spam complaints low or uses the exact From alignment expected by your provider.",
+          "For that reason, unresolved manual checks should be treated as launch blockers for serious campaigns even when the automated DNS score looks good.",
+        ],
+      },
+    ],
     faqs: [
       {
         question: "What does this checker verify automatically?",
@@ -392,6 +430,22 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
           "When p=none is enough for minimum readiness and when to move toward enforcement.",
       },
     ],
+    contentSections: [
+      {
+        title: "Gmail requirements in practical terms",
+        paragraphs: [
+          "For bulk senders, Gmail expects authenticated mail with SPF, DKIM and DMARC. DMARC can start in p=none monitoring mode, but the record still needs to exist and align with your sending setup.",
+          "Gmail also expects senders to make unsubscribing easy, keep complaint rates low and send messages that identify the sender clearly. Those items require ESP or message-level review and are shown as manual checks.",
+        ],
+      },
+      {
+        title: "Why DNS checks are not the whole story",
+        paragraphs: [
+          "A domain can publish valid DNS records and still perform poorly if recipients complain, campaigns are formatted badly or the sending provider is not aligned with the visible From domain.",
+          "Use this page to verify the public setup first, then confirm spam-rate and unsubscribe requirements in Google Postmaster Tools and your email platform before relying on the domain for bulk sending.",
+        ],
+      },
+    ],
     faqs: [
       {
         question: "Who is a Gmail bulk sender?",
@@ -448,6 +502,22 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
         title: "Mailchimp Gmail compliance guide",
         summary:
           "Use the Mailchimp guide when your campaigns depend on provider-specific DKIM selectors and unsubscribe settings.",
+      },
+    ],
+    contentSections: [
+      {
+        title: "How to interpret DMARC policy for bulk email",
+        paragraphs: [
+          "DMARC tells receiving providers what to do when a message fails SPF or DKIM alignment. For a new or recently changed setup, p=none is useful because it lets you monitor results without asking providers to block mail.",
+          "Quarantine and reject are stronger enforcement modes. They can protect a domain better, but only after legitimate senders are confirmed to pass authentication and alignment.",
+        ],
+      },
+      {
+        title: "Avoid tightening too early",
+        paragraphs: [
+          "A strict DMARC policy can break real business mail if a marketing platform, CRM or transactional provider has not been authenticated correctly.",
+          "Before moving beyond p=none, review all expected senders and confirm that SPF or DKIM alignment passes for each important mail stream.",
+        ],
       },
     ],
     faqs: [
@@ -517,6 +587,22 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
           "Planned next: review spam rate and compliance signals after Mailchimp authentication is stable.",
       },
     ],
+    contentSections: [
+      {
+        title: "Mailchimp setup checks to confirm",
+        paragraphs: [
+          "Mailchimp campaigns usually depend on domain authentication records that are generated inside the Mailchimp account. DKIM selectors can vary, so the most reliable source is the domain authentication page for that account.",
+          "Use this page to check the public DNS result, then compare it with Mailchimp's own setup screen before editing DNS. A missing guessed selector should be treated as a warning, not proof that DKIM is absent.",
+        ],
+      },
+      {
+        title: "What Mailchimp does not prove by itself",
+        paragraphs: [
+          "Mailchimp can help with campaign unsubscribe behavior, but this tool does not inspect live campaign headers or account-level settings.",
+          "Before a large send, confirm unsubscribe behavior, sending domain alignment and spam-rate monitoring in the provider tools you actually use.",
+        ],
+      },
+    ],
     faqs: [
       {
         question: "Which DKIM selectors does Mailchimp use?",
@@ -562,6 +648,22 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     statusLabels: spfStatusLabels,
     showEspSelector: false,
     guidePreviews: [],
+    contentSections: [
+      {
+        title: "What an SPF record does",
+        paragraphs: [
+          "SPF is a DNS TXT record that lists which servers or providers are allowed to send mail for a domain. Receivers use it as one signal when deciding whether a message is authenticated.",
+          "For bulk email, SPF matters because marketing platforms, CRMs and transactional tools often need to be authorized explicitly in the domain's SPF policy.",
+        ],
+      },
+      {
+        title: "Common SPF mistakes",
+        paragraphs: [
+          "The most common SPF problem is publishing more than one SPF TXT record. A domain should have exactly one SPF policy, with all authorized senders combined into that single record.",
+          "Another common issue is adding too many include mechanisms. SPF has a 10 DNS lookup limit, so every new provider should be reviewed before it is added.",
+        ],
+      },
+    ],
     faqs: [
       {
         question: "Can I have multiple SPF records?",
@@ -604,6 +706,22 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     statusLabels: dmarcStatusLabels,
     showEspSelector: false,
     guidePreviews: [],
+    contentSections: [
+      {
+        title: "What DMARC adds to SPF and DKIM",
+        paragraphs: [
+          "DMARC sits on top of SPF and DKIM. It checks whether authenticated mail aligns with the visible From domain and gives receivers a policy for messages that fail.",
+          "A DMARC record is also one of the core expectations for bulk sending readiness. Without it, a domain is usually not ready for serious Gmail or Yahoo campaign traffic.",
+        ],
+      },
+      {
+        title: "p=none, quarantine and reject",
+        paragraphs: [
+          "p=none is monitoring mode. It is useful for collecting reports and validating real senders before enforcement.",
+          "quarantine and reject are enforcement policies. They should be adopted only after legitimate mail sources are authenticated and aligned.",
+        ],
+      },
+    ],
     faqs: [
       {
         question: "What is p=none?",
@@ -646,6 +764,22 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     statusLabels: mxStatusLabels,
     showEspSelector: false,
     guidePreviews: [],
+    contentSections: [
+      {
+        title: "Why MX records matter",
+        paragraphs: [
+          "MX records tell the internet where to deliver incoming mail for a domain. Even when a domain is mainly used for campaigns, most businesses still expect replies, support messages and verification emails to work.",
+          "Missing or broken MX records do not always stop outbound sending, but they are a readiness warning for a real business domain.",
+        ],
+      },
+      {
+        title: "What to check before changing MX",
+        paragraphs: [
+          "Confirm that the MX hosts match your current mailbox provider before making changes. Moving MX records without planning can interrupt incoming mail.",
+          "If a domain intentionally does not receive email, it may publish Null MX. That is different from an accidental missing MX setup.",
+        ],
+      },
+    ],
     faqs: [
       {
         question: "What is an MX record?",
@@ -689,6 +823,22 @@ export const checkerPages: Record<string, CheckerPageConfig> = {
     statusLabels: spfLookupStatusLabels,
     showEspSelector: false,
     guidePreviews: [],
+    contentSections: [
+      {
+        title: "Why the SPF lookup limit exists",
+        paragraphs: [
+          "SPF evaluation has a hard limit of 10 DNS lookups. Mechanisms such as include, a, mx, exists, ptr and redirect can consume lookups while receivers evaluate the policy.",
+          "Large marketing stacks can reach the limit quickly when several providers are added over time without removing old senders.",
+        ],
+      },
+      {
+        title: "How to reduce lookup pressure",
+        paragraphs: [
+          "Start by removing providers that no longer send mail for the domain. Avoid duplicate includes and consolidate tools where possible.",
+          "SPF flattening can reduce lookups in some cases, but it creates maintenance risk if provider IPs change. Use it deliberately, not as a default fix.",
+        ],
+      },
+    ],
     faqs: [
       {
         question: "Why is there a 10 lookup limit?",

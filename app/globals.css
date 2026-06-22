@@ -465,6 +465,7 @@ h3 {
 .how-band,
 .help-band,
 .faq-band,
+.content-band,
 .tools-band,
 .guides-band {
   padding: 68px 0;
@@ -747,6 +748,40 @@ h3 {
   border-top: 1px solid var(--line);
 }
 
+.content-band {
+  background: var(--band);
+  border-top: 1px solid var(--line);
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.content-grid article {
+  padding: 24px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+}
+
+.content-grid h2 {
+  margin-bottom: 16px;
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  line-height: 1.15;
+}
+
+.content-grid p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.content-grid p:last-child {
+  margin-bottom: 0;
+}
+
 .cta-actions {
   display: grid;
   gap: 12px;
@@ -940,6 +975,10 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
   .footer-grid {
     grid-template-columns: 1fr;
   }
@@ -1011,6 +1050,7 @@ h3 {
   .check-card,
   .manual-card,
   .guide-card,
+  .content-grid article,
   .faq-list article,
   .tool-link {
     padding: 14px;
