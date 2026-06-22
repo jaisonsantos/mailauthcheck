@@ -7,4 +7,6 @@ npm-debug.log*
 tsconfig.tsbuildinfo
 __pycache__/
 .pytest_cache/
+.coverage
+htmlcov/
 .venv/
