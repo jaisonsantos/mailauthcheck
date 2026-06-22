@@ -724,6 +724,7 @@ def build_readiness_check(
     dkim_check: CheckResult,
     dmarc_check: CheckResult,
     spf_lookup_check: CheckResult,
+    mx_check: CheckResult,
 ) -> CheckResult:
     if dmarc_check.status == "missing":
         return make_check(
@@ -749,6 +750,35 @@ def build_readiness_check(
             raw_records=[],
             confidence="high",
             can_be_false_positive=False,
+        )
+
+    if mx_check.status != "ok":
+        if mx_check.status == "missing":
+            return make_check(
+                check_name="Gmail/Yahoo Readiness",
+                status="warning",
+                severity="medium",
+                summary="Bulk readiness needs MX records or an MX retry.",
+                technical_details=(
+                    "MX records are missing or could not be confirmed. "
+                    "Retry the scan or verify that the domain can receive mail if it should."
+                ),
+                recommended_fix="Retry the check, then verify your MX records if the problem persists.",
+                raw_records=[],
+                confidence="medium" if mx_check.confidence == "high" else "low",
+                can_be_false_positive=mx_check.canBeFalsePositive,
+            )
+
+        return make_check(
+            check_name="Gmail/Yahoo Readiness",
+            status="error",
+            severity="high",
+            summary="Bulk readiness is incomplete because MX could not be checked.",
+            technical_details="MX did not respond cleanly, so the readiness check is incomplete.",
+            recommended_fix="Retry the check, then verify your DNS provider if the problem persists.",
+            raw_records=[],
+            confidence="low",
+            can_be_false_positive=True,
         )
 
     if spf_lookup_check.status == "error":
@@ -1030,7 +1060,7 @@ def build_aggregate_result(domain: str, esp_provider: str | None = None) -> Aggr
     dkim_check = build_dkim_check(domain, esp_provider)
     dmarc_check = build_dmarc_check(domain)
     mx_check = build_mx_check(domain)
-    readiness_check = build_readiness_check(spf_check, dkim_check, dmarc_check, spf_lookup_check)
+    readiness_check = build_readiness_check(spf_check, dkim_check, dmarc_check, spf_lookup_check, mx_check)
 
     checks = [spf_check, dkim_check, dmarc_check, mx_check, spf_lookup_check, readiness_check]
     score = _score_from_checks(mx_check, spf_check, dkim_check, spf_lookup_check, dmarc_check)

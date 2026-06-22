@@ -221,6 +221,74 @@ class BackendEdgeCaseTests(unittest.TestCase):
             any(item.status == "manual_check" for item in aggregate.gmailBulkChecklist)
         )
 
+    def test_readiness_check_does_not_look_good_when_mx_fails(self) -> None:
+        spf_check = checks.make_check(
+            check_name="SPF",
+            status="ok",
+            severity="info",
+            summary="SPF is present.",
+            technical_details=None,
+            recommended_fix=None,
+            raw_records=["v=spf1 -all"],
+            confidence="high",
+            can_be_false_positive=False,
+        )
+        dkim_check = checks.make_check(
+            check_name="DKIM",
+            status="ok",
+            severity="info",
+            summary="DKIM is present.",
+            technical_details=None,
+            recommended_fix=None,
+            raw_records=["v=DKIM1; p=abc"],
+            confidence="high",
+            can_be_false_positive=False,
+        )
+        dmarc_check = checks.make_check(
+            check_name="DMARC",
+            status="ok",
+            severity="info",
+            summary="DMARC is present.",
+            technical_details=None,
+            recommended_fix=None,
+            raw_records=["v=DMARC1; p=reject"],
+            confidence="high",
+            can_be_false_positive=False,
+        )
+        spf_lookup_check = checks.make_check(
+            check_name="SPF Lookup Count",
+            status="ok",
+            severity="info",
+            summary="SPF lookup count is within the safe range.",
+            technical_details=None,
+            recommended_fix=None,
+            raw_records=[],
+            confidence="high",
+            can_be_false_positive=False,
+        )
+        mx_check = checks.make_check(
+            check_name="MX",
+            status="error",
+            severity="high",
+            summary="MX could not be checked because DNS did not respond cleanly.",
+            technical_details="DNS lookup timed out. Try again in a moment.",
+            recommended_fix="Retry the check, then verify your DNS provider if the problem persists.",
+            raw_records=[],
+            confidence="low",
+            can_be_false_positive=True,
+        )
+
+        readiness = checks.build_readiness_check(
+            spf_check,
+            dkim_check,
+            dmarc_check,
+            spf_lookup_check,
+            mx_check,
+        )
+
+        self.assertEqual(readiness.status, "error")
+        self.assertIn("incomplete because MX could not be checked", readiness.summary)
+
 
 if __name__ == "__main__":
     unittest.main()
