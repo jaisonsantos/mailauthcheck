@@ -45,3 +45,19 @@ def test_invalid_domains(raw_domain: str) -> None:
         normalize_domain(raw_domain)
 
     assert "Enter a valid domain" in str(exc_info.value)
+
+
+@pytest.mark.parametrize(
+    ("raw_domain", "message"),
+    [
+        ("https://example.com", "not a URL"),
+        ("user@example.com", "not an email address"),
+        ("192.168.1.1", "not an IP address"),
+        (f"{'a' * 250}.com", "shorter than 254 characters"),
+    ],
+)
+def test_invalid_domain_messages_are_actionable(raw_domain: str, message: str) -> None:
+    with pytest.raises(DomainValidationError) as exc_info:
+        normalize_domain(raw_domain)
+
+    assert message in str(exc_info.value)

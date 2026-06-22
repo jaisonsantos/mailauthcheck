@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ipaddress
 import re
 
 
@@ -10,6 +11,10 @@ DOMAIN_PATTERN = re.compile(
 INVALID_DOMAIN_MESSAGE = (
     "Enter a valid domain, like example.com. Do not include https:// or email addresses."
 )
+URL_DOMAIN_MESSAGE = "Enter a valid domain, not a URL. Example: example.com."
+EMAIL_DOMAIN_MESSAGE = "Enter a valid domain, not an email address. Example: example.com."
+IP_DOMAIN_MESSAGE = "Enter a valid domain, not an IP address. Example: example.com."
+TOO_LONG_DOMAIN_MESSAGE = "Enter a valid domain shorter than 254 characters."
 
 
 class DomainValidationError(ValueError):
@@ -22,7 +27,23 @@ def normalize_domain(raw_domain: str) -> str:
     if not domain:
         raise DomainValidationError(INVALID_DOMAIN_MESSAGE)
 
-    if "://" in domain or "/" in domain or "@" in domain:
+    if "://" in domain or "/" in domain:
+        raise DomainValidationError(URL_DOMAIN_MESSAGE)
+
+    if "@" in domain:
+        raise DomainValidationError(EMAIL_DOMAIN_MESSAGE)
+
+    try:
+        ipaddress.ip_address(domain)
+    except ValueError:
+        pass
+    else:
+        raise DomainValidationError(IP_DOMAIN_MESSAGE)
+
+    if len(domain) > 253:
+        raise DomainValidationError(TOO_LONG_DOMAIN_MESSAGE)
+
+    if not re.match(r"^[a-z0-9.-]+$", domain):
         raise DomainValidationError(INVALID_DOMAIN_MESSAGE)
 
     try:
