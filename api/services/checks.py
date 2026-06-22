@@ -916,8 +916,12 @@ def _aggregate_status(score: int, checks: list[CheckResult]) -> str:
         or check.checkName == "MX" and check.status != "ok"
         for check in checks
     )
+    needs_review = any(
+        check.checkName == "Gmail/Yahoo Readiness" and check.status == "warning"
+        for check in checks
+    )
 
-    if score >= 80 and not blockers:
+    if score >= 80 and not blockers and not needs_review:
         return "ready"
     if score >= 50:
         return "needs_attention"

@@ -241,6 +241,78 @@ class BackendEdgeCaseTests(unittest.TestCase):
             any(item.status == "manual_check" for item in aggregate.gmailBulkChecklist)
         )
 
+    def test_aggregate_status_needs_attention_when_readiness_is_warning(self) -> None:
+        check_results = [
+            checks.make_check(
+                check_name="SPF",
+                status="ok",
+                severity="info",
+                summary="SPF is present.",
+                technical_details=None,
+                recommended_fix=None,
+                raw_records=["v=spf1 -all"],
+                confidence="high",
+                can_be_false_positive=False,
+            ),
+            checks.make_check(
+                check_name="DKIM",
+                status="warning",
+                severity="medium",
+                summary="DKIM selector needs confirmation.",
+                technical_details=None,
+                recommended_fix=None,
+                raw_records=[],
+                confidence="low",
+                can_be_false_positive=True,
+            ),
+            checks.make_check(
+                check_name="DMARC",
+                status="ok",
+                severity="info",
+                summary="DMARC is present.",
+                technical_details=None,
+                recommended_fix=None,
+                raw_records=["v=DMARC1; p=reject"],
+                confidence="high",
+                can_be_false_positive=False,
+            ),
+            checks.make_check(
+                check_name="MX",
+                status="ok",
+                severity="info",
+                summary="MX records found.",
+                technical_details=None,
+                recommended_fix=None,
+                raw_records=["10 mail.example.com"],
+                confidence="high",
+                can_be_false_positive=False,
+            ),
+            checks.make_check(
+                check_name="SPF Lookup Count",
+                status="ok",
+                severity="info",
+                summary="SPF lookup count is within the safe range.",
+                technical_details=None,
+                recommended_fix=None,
+                raw_records=[],
+                confidence="high",
+                can_be_false_positive=False,
+            ),
+            checks.make_check(
+                check_name="Gmail/Yahoo Readiness",
+                status="warning",
+                severity="medium",
+                summary="Bulk readiness needs DKIM confirmation.",
+                technical_details=None,
+                recommended_fix=None,
+                raw_records=[],
+                confidence="low",
+                can_be_false_positive=True,
+            ),
+        ]
+
+        self.assertEqual(checks._aggregate_status(83, check_results), "needs_attention")
+
     def test_readiness_check_does_not_look_good_when_mx_fails(self) -> None:
         spf_check = checks.make_check(
             check_name="SPF",
