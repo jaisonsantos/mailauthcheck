@@ -140,6 +140,12 @@ node -v
 NEXT_PUBLIC_MAILAUTHCHECK_API_URL=http://127.0.0.1:8000 npm run dev
 ~~~
 
+If you want to test from a phone on the same Wi-Fi network, point the frontend env at the Mac IP instead of `127.0.0.1`:
+
+~~~bash
+NEXT_PUBLIC_MAILAUTHCHECK_API_URL=http://192.168.3.141:8000 npm run dev -- --hostname 0.0.0.0 --port 3000
+~~~
+
 Then open:
 
 ~~~text

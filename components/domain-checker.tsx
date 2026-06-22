@@ -815,6 +815,7 @@ function BulkChecklistPanel({
 export function DomainChecker({ config }: { config: CheckerPageConfig }) {
   const [locale, setLocale] = useState<Locale>("en");
   const [theme, setTheme] = useState<Theme>("light");
+  const [apiBaseUrl, setApiBaseUrl] = useState(API_BASE_URL);
   const [domain, setDomain] = useState("");
   const [espProvider, setEspProvider] = useState(
     config.pathname === "/guides/mailchimp-gmail-compliance" ? "mailchimp" : "",
@@ -854,6 +855,10 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
     document.documentElement.dataset.theme = theme;
     window.localStorage.setItem("mailauthcheck.theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    setApiBaseUrl(resolveRuntimeApiBaseUrl(API_BASE_URL));
+  }, []);
 
   useEffect(() => {
     const nextLocale = SHOW_LOCALE_SELECTOR ? locale : "en";
@@ -898,8 +903,8 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
     try {
       const requestUrl =
         config.apiPath === "/api/check-domain"
-          ? `${API_BASE_URL}${config.apiPath}`
-          : `${API_BASE_URL}${config.apiPath}?domain=${encodeURIComponent(domain)}`;
+          ? `${apiBaseUrl}${config.apiPath}`
+          : `${apiBaseUrl}${config.apiPath}?domain=${encodeURIComponent(domain)}`;
 
       const response = await fetch(
         requestUrl,
@@ -1394,6 +1399,34 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       </footer>
     </main>
   );
+}
+
+function resolveRuntimeApiBaseUrl(configuredBaseUrl: string) {
+  if (typeof window === "undefined") {
+    return configuredBaseUrl;
+  }
+
+  try {
+    const parsed = new URL(configuredBaseUrl);
+    const isLocalHost = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+    const pageHostIsLocal =
+      window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
+    if (isLocalHost && !pageHostIsLocal) {
+      return `${window.location.protocol}//${window.location.hostname}:8000`;
+    }
+
+    return parsed.origin;
+  } catch {
+    if (
+      configuredBaseUrl.includes("localhost") ||
+      configuredBaseUrl.includes("127.0.0.1")
+    ) {
+      return `${window.location.protocol}//${window.location.hostname}:8000`;
+    }
+
+    return configuredBaseUrl.replace(/\/$/, "");
+  }
 }
 
 function normalizeCheckListResult(payload: CheckListResult): AggregateResult {
