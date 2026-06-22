@@ -113,6 +113,17 @@ const chromeCopy = {
     copyUnavailable: "Run a scan to copy report",
     clearResult: "Clear result",
     backToTop: "Back to top",
+    recentLabel: "Recent checks",
+    recentTitle: "Recent checks",
+    recentIntro: "Saved on this device only. Open a saved result without making a new DNS request.",
+    recentShowHistory: "Show history",
+    recentHideHistory: "Hide history",
+    recentEmpty: "No saved checks yet. Run a scan to keep the latest result here.",
+    recentSavedNote: "Saved result. DNS may have changed.",
+    recentOpenSaved: "Open saved result",
+    recentCheckAgain: "Check again",
+    recentRemove: "Remove",
+    recentClearHistory: "Clear history",
     helpNoteResult:
       "This opens a simple external contact form and pre-fills the domain and main issues.",
     helpNoteEmpty: "Run a scan first to unlock the help request and technical report.",
@@ -183,6 +194,17 @@ const chromeCopy = {
     copyUnavailable: "Ejecuta un scan para copiar reporte",
     clearResult: "Limpiar resultado",
     backToTop: "Volver arriba",
+    recentLabel: "Checks recientes",
+    recentTitle: "Checks recientes",
+    recentIntro: "Guardado solo en este dispositivo. Abre un resultado guardado sin hacer una nueva consulta DNS.",
+    recentShowHistory: "Mostrar historial",
+    recentHideHistory: "Ocultar historial",
+    recentEmpty: "Todavia no hay checks guardados. Ejecuta un scan para guardar el ultimo resultado aqui.",
+    recentSavedNote: "Resultado guardado. DNS puede haber cambiado.",
+    recentOpenSaved: "Abrir resultado guardado",
+    recentCheckAgain: "Verificar otra vez",
+    recentRemove: "Eliminar",
+    recentClearHistory: "Limpiar historial",
     helpNoteResult:
       "Esto abre un formulario externo simple y completa el dominio y los problemas principales.",
     helpNoteEmpty: "Ejecuta un scan primero para activar ayuda y reporte tecnico.",
@@ -253,6 +275,17 @@ const chromeCopy = {
     copyUnavailable: "Rode um scan para copiar relatorio",
     clearResult: "Limpar resultado",
     backToTop: "Voltar ao topo",
+    recentLabel: "Checks recentes",
+    recentTitle: "Checks recentes",
+    recentIntro: "Salvo apenas neste dispositivo. Abra um resultado salvo sem fazer uma nova consulta DNS.",
+    recentShowHistory: "Mostrar historico",
+    recentHideHistory: "Ocultar historico",
+    recentEmpty: "Ainda nao ha checks salvos. Rode um scan para guardar o ultimo resultado aqui.",
+    recentSavedNote: "Resultado salvo. O DNS pode ter mudado.",
+    recentOpenSaved: "Abrir resultado salvo",
+    recentCheckAgain: "Verificar novamente",
+    recentRemove: "Remover",
+    recentClearHistory: "Limpar historico",
     helpNoteResult:
       "Isso abre um formulario externo simples e preenche dominio e principais problemas.",
     helpNoteEmpty: "Rode um scan primeiro para liberar ajuda e relatorio tecnico.",
@@ -1069,7 +1102,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
       const requestUrl =
         config.apiPath === "/api/check-domain"
           ? `${apiBaseUrl}${config.apiPath}`
-          : `${apiBaseUrl}${config.apiPath}?domain=${encodeURIComponent(domain)}`;
+          : `${apiBaseUrl}${config.apiPath}?domain=${encodeURIComponent(normalizedDomain)}`;
 
       const response = await fetch(
         requestUrl,
@@ -1368,9 +1401,9 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
             <section className={`recent-checks ${recentChecksExpanded ? "expanded" : "collapsed"}`} aria-label="Recent checks">
               <div className="recent-header">
                 <div className="section-heading">
-                  <p className="eyebrow">Recent checks</p>
-                  <h2>Recent checks</h2>
-                  <p>Saved on this device only. Open a saved result without making a new DNS request.</p>
+                  <p className="eyebrow">{copy.recentLabel}</p>
+                  <h2>{copy.recentTitle}</h2>
+                  <p>{copy.recentIntro}</p>
                 </div>
                 <button
                   type="button"
@@ -1378,12 +1411,12 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                   onClick={toggleRecentChecksExpanded}
                   aria-expanded={recentChecksExpanded}
                 >
-                  {recentChecksExpanded ? "Hide history" : "Show history"}
+                  {recentChecksExpanded ? copy.recentHideHistory : copy.recentShowHistory}
                 </button>
               </div>
               <div className="recent-checks-body" aria-hidden={!recentChecksExpanded}>
                 {recentChecks.length === 0 ? (
-                  <p className="recent-empty">No saved checks yet. Run a scan to keep the latest result here.</p>
+                  <p className="recent-empty">{copy.recentEmpty}</p>
                 ) : (
                   <div className="recent-list">
                     {visibleRecentChecks.map((item) => (
@@ -1396,17 +1429,17 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                           <p className="recent-summary">
                             Status: {item.resultSnapshot.status} · Score: {item.resultSnapshot.score}
                           </p>
-                          <p className="recent-saved-note">Saved result. DNS may have changed.</p>
+                          <p className="recent-saved-note">{copy.recentSavedNote}</p>
                         </div>
                         <div className="recent-actions">
                           <button type="button" onClick={() => openRecentCheck(item)}>
-                            Open saved result
+                            {copy.recentOpenSaved}
                           </button>
                           <button type="button" onClick={() => refreshRecentCheck(item)}>
-                            Check again
+                            {copy.recentCheckAgain}
                           </button>
                           <button type="button" onClick={() => removeRecentCheck(item.id)}>
-                            Remove
+                            {copy.recentRemove}
                           </button>
                         </div>
                       </article>
@@ -1424,7 +1457,7 @@ export function DomainChecker({ config }: { config: CheckerPageConfig }) {
                 ) : null}
                 {recentChecks.length > 0 ? (
                   <button type="button" className="clear-history-button" onClick={clearRecentChecks}>
-                    Clear history
+                    {copy.recentClearHistory}
                   </button>
                 ) : null}
               </div>
