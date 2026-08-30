@@ -1,275 +1,141 @@
 # MailAuthCheck
 
-MailAuthCheck is a free, fast, SEO-friendly utility site that checks whether a domain is ready for bulk email sending to Gmail and Yahoo.
+MailAuthCheck is a fast, public-domain readiness checker for teams preparing to send bulk email to Gmail and Yahoo.
 
-The user enters a domain, such as `example.com`, optionally selects a sending platform, and receives a practical report covering SPF, DKIM selector signals, DMARC, MX records, SPF DNS lookup count, and manual bulk-sender requirements that cannot be verified from DNS alone.
+Enter a domain and get a practical report covering SPF, DKIM signals, DMARC, MX records, SPF DNS lookup count, and the bulk-sender requirements that still need manual verification.
 
-## Product vision
+## Why this project
 
-MailAuthCheck should work like a practical utility site, not like a SaaS product at launch.
+Bulk-email requirements are spread across DNS records, provider-specific guidance, and operational checks. MailAuthCheck turns those signals into one simple readiness result without requiring an account, dashboard, or paid plan.
 
-The goal is to give users an immediate answer to one question:
+## Engineering highlights
 
-> Is my domain ready for bulk email sending to Gmail and Yahoo?
+- **Next.js frontend** designed for fast, indexable utility pages.
+- **FastAPI backend** for DNS and email-authentication checks.
+- SPF, DKIM selector-aware signals, DMARC, MX, and SPF lookup-count analysis.
+- Bulk-sender readiness scoring with explicit manual checks instead of pretending every requirement is machine-verifiable.
+- In-memory TTL caching and basic rate limiting.
+- Structured JSON logging.
+- Configurable CORS for local and production environments.
+- Plausible analytics integration and external lead-capture support.
+- No database or authentication required for the MVP, keeping the runtime deliberately small.
 
-The MVP must be useful without login, dashboard, billing, or complex onboarding.
+## Architecture
 
-## MVP strategy
+```text
+Browser
+  │
+  ▼
+Next.js UI / SEO pages
+  │
+  ▼
+FastAPI
+  ├── SPF analysis
+  ├── DKIM selector checks
+  ├── DMARC analysis
+  ├── MX lookup
+  ├── SPF DNS lookup counter
+  ├── readiness scoring
+  ├── TTL cache
+  └── rate limiting + JSON logs
+  │
+  ▼
+Public DNS
+```
 
-The first version should be:
+The product intentionally distinguishes between checks that can be derived from public DNS and requirements such as one-click unsubscribe, spam-rate monitoring, and From alignment that may require manual verification.
 
-- free;
-- fast;
-- simple;
-- indexable by Google;
-- clear for non-technical users;
-- useful for developers and agencies;
-- prepared for SEO pages and future lead capture;
-- focused on public DNS checks and explicit manual checklist items.
+## Main capabilities
 
-## Target MVP scope
-
-- Domain input at the top of the page.
-- Optional ESP selector.
-- SPF check.
-- DKIM selector-aware check for selected/common ESP selectors.
-- DMARC check.
-- MX check.
+- Domain readiness check.
+- Optional ESP selection.
+- SPF validation.
+- DKIM selector-aware signals.
+- DMARC validation.
+- MX validation.
 - SPF DNS lookup count.
-- Gmail/Yahoo bulk sender readiness checklist.
-- Manual checks for one-click unsubscribe and spam-rate monitoring.
-- Simple score: Ready / Needs attention / Not ready.
-- Plain-English explanation.
-- Optional technical details.
-- Clear next steps.
-- Lightweight lead capture.
-- CTA for assisted setup.
-- Initial SEO pages:
-  - `/`
-  - `/bulk-email-readiness-checker`
-  - `/gmail-bulk-sender-requirements`
-  - `/spf-checker`
-  - `/dmarc-checker`
-  - `/mx-record-checker`
-  - `/spf-lookup-counter`
+- Gmail/Yahoo bulk-sender checklist.
+- Ready / Needs attention / Not ready result.
+- Plain-English explanations plus technical details.
+- Dedicated SEO utility pages for individual checks.
 
-## Current implementation status
+## Tech stack
 
-The current implementation includes the Next.js frontend, FastAPI backend, SPF, DKIM selector-aware signals, DMARC, MX, SPF lookup count, bulk readiness checklist fields, manual check fields, cache, rate limiting, JSON logs, Plausible integration and external lead capture URL support.
-
-Manual checks such as one-click unsubscribe, spam rate and From alignment are shown as manual checks only. They are not marked as passed automatically.
-
-## What the MVP does not include
-
-The MVP must not include:
-
-- login;
-- dashboard;
-- Stripe;
-- billing;
-- paid plans;
-- multi-tenant architecture;
-- complex scan history;
-- recurring monitoring;
-- paid public API;
-- complex PDF reports;
-- agency panel;
-- database;
-- AI in the technical core;
-- blacklist checks;
-- BIMI;
-- MTA-STS;
-- TLS-RPT;
-- email header analyzer;
-- ESP API integrations;
-- email list verification;
-- email content scanning;
-- sending real test emails.
-
-## Initial positioning
-
-**Name:** MailAuthCheck
-
-**Headline:** Bulk Email Readiness Checker
-
-**Subheadline:** Check if your domain meets the basic Gmail and Yahoo bulk sender requirements before your next campaign. Review SPF, DKIM, DMARC, MX, SPF lookups and manual checks like one-click unsubscribe and spam-rate monitoring.
-
-**Disclaimer:** This tool checks public DNS records and known bulk sender readiness signals. It does not guarantee inbox placement, campaign performance, sender reputation or provider acceptance.
-
-## Preferred technical direction
-
-The preferred initial stack is:
-
-- Next.js for frontend and SEO pages;
-- FastAPI for DNS/authentication checks;
-- no database in the MVP;
-- simple in-memory TTL cache;
-- basic rate limiting;
-- JSON logs;
-- Google Search Console;
-- Plausible or Google Analytics.
+- **Frontend:** Next.js
+- **Backend:** FastAPI / Python
+- **Runtime:** Node.js 18.18+ and Python
+- **Observability:** structured JSON logs, Plausible integration
+- **State:** in-memory TTL cache; no database in the MVP
 
 ## Run locally
 
-Node.js:
+### Backend
 
-- Use `Node.js >= 18.18.0`.
-- `Next.js 15.5.19` will not start with `18.17.0`.
-- Check your local version with `node -v`.
-
-Install frontend dependencies:
-
-~~~bash
-npm install
-~~~
-
-Start the FastAPI backend:
-
-~~~bash
+```bash
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/uvicorn api.main:app --reload --host 127.0.0.1 --port 8000
-~~~
+```
 
-Start the Next.js frontend in another terminal:
+### Frontend
 
-~~~bash
+```bash
 nvm install 20
 nvm use 20
-node -v
+npm install
 NEXT_PUBLIC_MAILAUTHCHECK_API_URL=http://127.0.0.1:8000 npm run dev
-~~~
+```
 
-If you want to test from a phone on the same Wi-Fi network, point the frontend env at the Mac IP instead of `127.0.0.1`:
+Open `http://localhost:3000`.
 
-~~~bash
-NEXT_PUBLIC_MAILAUTHCHECK_API_URL=http://192.168.3.141:8000 npm run dev -- --hostname 0.0.0.0 --port 3000
-~~~
+## Configuration
 
-Then open:
+Frontend example:
 
-~~~text
-http://localhost:3000
-~~~
-
-## Production envs
-
-Frontend:
-
-~~~env
+```env
 NEXT_PUBLIC_SITE_URL=https://mailauthcheck.com
 NEXT_PUBLIC_MAILAUTHCHECK_API_URL=https://api.mailauthcheck.com
 NEXT_PUBLIC_SHOW_LOCALE_SELECTOR=false
 NEXT_PUBLIC_PLAUSIBLE_DOMAIN=mailauthcheck.com
-NEXT_PUBLIC_LEAD_CAPTURE_URL=https://tally.so/r/your-form-id
-NEXT_PUBLIC_CONTACT_EMAIL=hello@mailauthcheck.com
-~~~
+NEXT_PUBLIC_LEAD_CAPTURE_URL=https://example.com/your-form
+NEXT_PUBLIC_CONTACT_EMAIL=hello@example.com
+```
 
-Notes:
+Backend example:
 
-- `NEXT_PUBLIC_MAILAUTHCHECK_API_URL` should be the backend origin only.
-- Do not append `/api`; the frontend already appends each endpoint path.
-- Set `NEXT_PUBLIC_SHOW_LOCALE_SELECTOR=false` for the first public launch if the UI should stay English-only.
+```env
+ALLOWED_ORIGINS=https://mailauthcheck.com,https://www.mailauthcheck.com
+```
 
-Backend:
+Keep production CORS explicit; do not use `*`.
 
-~~~env
-ALLOWED_ORIGINS=https://mailauthcheck.com,https://www.mailauthcheck.com,https://mailauthcheck.vercel.app
-~~~
+## Production smoke test
 
-Notes:
-
-- `ALLOWED_ORIGINS` is comma-separated.
-- In local development, localhost origins remain the fallback when `ALLOWED_ORIGINS` is unset.
-- Do not use `*` in production.
-
-## Free-tier launch setup
-
-The recommended first launch should stay simple and cheap. The goal is validation, not infrastructure perfection.
-
-### Option A - easiest
-
-- Frontend: Vercel free tier.
-- Backend: Render, Fly.io, Railway or another simple managed service.
-- Lead capture: Tally, Google Forms, Formspree or similar.
-- Analytics: Plausible or another lightweight analytics option.
-- SEO: Google Search Console.
-
-This is the fastest path because Vercel handles the Next.js frontend and the backend only needs to expose one HTTPS API URL.
-
-Tradeoff: some free backend providers may sleep, so the first scan after inactivity can be slower.
-
-### Option B - cheapest persistent backend
-
-- Frontend: Vercel free tier.
-- Backend: Oracle Cloud Always Free VM.
-- Reverse proxy: Caddy or Nginx for HTTPS.
-- Process manager: systemd.
-- Lead capture: external form.
-- Database: none.
-
-This avoids backend sleep, but you must manage the VM firewall, service restart and HTTPS setup.
-
-Minimal backend runtime:
-
-~~~bash
-.venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000
-~~~
-
-Expose it publicly through the reverse proxy as:
-
-~~~text
-https://api.mailauthcheck.com
-~~~
-
-Then set the frontend variable:
-
-~~~env
-NEXT_PUBLIC_MAILAUTHCHECK_API_URL=https://api.mailauthcheck.com
-~~~
-
-Keep `ALLOWED_ORIGINS` strict:
-
-~~~env
-ALLOWED_ORIGINS=https://mailauthcheck.com,https://www.mailauthcheck.com,https://mailauthcheck.vercel.app
-~~~
-
-Do not add a database, login, dashboard, queue, billing or internal lead storage for launch.
-
-## Pre-launch checks
-
-Before a public deploy:
-
-- Confirm frontend scans work with the production value of `NEXT_PUBLIC_MAILAUTHCHECK_API_URL`.
-- Confirm the backend responds at `/healthz`.
-- Confirm the frontend origin is included in `ALLOWED_ORIGINS`.
-- Confirm `NEXT_PUBLIC_LEAD_CAPTURE_URL` opens a real external form and receives query params for `domain`, `espProvider`, `status`, `score`, `issues`, `tool`, `page`, and `cta`.
-- Confirm analytics is enabled with `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`.
-- Confirm the launch language decision matches `NEXT_PUBLIC_SHOW_LOCALE_SELECTOR`.
-
-Quick production smoke tests:
-
-~~~bash
+```bash
 curl https://api.mailauthcheck.com/healthz
 curl -s -X POST https://api.mailauthcheck.com/api/check-domain \
   -H "content-type: application/json" \
   -d '{"domain":"example.com","mode":"bulk_sender","espProvider":"mailchimp"}'
-~~~
+```
 
-## Documentation map
+## Design choices
 
-- `AGENTS.md` — permanent rules for AI agents and contributors.
-- `docs/00-master-plan-summary.md` — executive summary.
-- `docs/01-product-brief.md` — product brief and positioning.
-- `docs/02-mvp-scope.md` — closed MVP scope.
-- `docs/03-technical-architecture.md` — pragmatic architecture.
-- `docs/04-api-contract.md` — initial API contract.
-- `docs/05-result-schema.md` — standard result model.
-- `docs/06-scoring-model.md` — score model.
-- `docs/07-seo-plan.md` — initial SEO plan.
-- `docs/08-pages-and-content.md` — page map and content plan.
-- `docs/09-validation-plan.md` — 30-day validation plan.
-- `docs/10-monetization.md` — lightweight monetization plan.
-- `docs/11-roadmap.md` — post-MVP roadmap.
-- `docs/12-decision-log.md` — product and architecture decision log.
-- `docs/13-backlog-draft.md` — initial backlog draft.
+This repository deliberately avoids SaaS complexity in the first version. There is no login, billing, dashboard, recurring monitoring, database, or paid API. The goal is to prove the usefulness of the core DNS-analysis workflow before introducing heavier product infrastructure.
+
+## Documentation
+
+More detailed product and engineering decisions live under `docs/`, including:
+
+- `docs/03-technical-architecture.md`
+- `docs/04-api-contract.md`
+- `docs/05-result-schema.md`
+- `docs/06-scoring-model.md`
+- `docs/07-seo-plan.md`
+- `docs/09-validation-plan.md`
+- `docs/12-decision-log.md`
+
+`AGENTS.md` contains repository-level instructions for automated development agents and contributors.
+
+## Disclaimer
+
+MailAuthCheck evaluates public DNS records and known bulk-sender readiness signals. It does not guarantee inbox placement, sender reputation, campaign performance, or acceptance by an email provider.
